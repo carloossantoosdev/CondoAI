@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
@@ -9,7 +9,8 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle2, Sparkles } from 'lucide-react';
 import { Loading } from '@/components/ui/loading';
 
-export default function SuccessPage() {
+// Componente interno que usa useSearchParams
+function SuccessContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -157,6 +158,28 @@ export default function SuccessPage() {
         </Card>
       </div>
     </MainLayout>
+  );
+}
+
+// Componente principal com Suspense
+export default function SuccessPage() {
+  return (
+    <Suspense fallback={
+      <MainLayout>
+        <div className="flex items-center justify-center min-h-[60vh]">
+          <Card className="max-w-md w-full">
+            <CardContent className="p-12 text-center">
+              <Loading size="lg" />
+              <p className="mt-4 text-lg font-semibold text-slate-900">
+                Carregando...
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
+    }>
+      <SuccessContent />
+    </Suspense>
   );
 }
 
