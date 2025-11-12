@@ -1,6 +1,6 @@
-import { Box, Card, CardContent, Typography, Chip } from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import { TrendingUp } from '@mui/icons-material';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { TrendingUp, DollarSign, Target } from 'lucide-react';
 
 interface DividendsSummaryProps {
   totalReceived: number;
@@ -25,87 +25,50 @@ export function DividendsSummary({
   };
 
   return (
-    <Grid container spacing={3}>
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Card 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid', 
-            borderColor: 'divider',
-            borderRadius: 3,
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            color: 'white'
-          }}
-        >
-          <CardContent>
-            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-              <Box>
-                <Typography variant="body2" sx={{ opacity: 0.9 }} gutterBottom>
-                  Total Investido
-                </Typography>
-                <Typography variant="h4" fontWeight={700}>
-                  {formatCurrency(totalInvestido)}
-                </Typography>
-                <Typography variant="caption" sx={{ opacity: 0.8, mt: 1, display: 'block' }}>
-                  Valor total da carteira
-                </Typography>
-              </Box>
-              <TrendingUp sx={{ fontSize: 40, opacity: 0.7 }} />
-            </Box>
-          </CardContent>
-        </Card>
-      </Grid>
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* Total Investido */}
+      <Card className="bg-gradient-to-br from-orange-500 to-amber-500 text-white border-0">
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm opacity-90 mb-2">Total Investido</p>
+              <p className="text-3xl font-bold">{formatCurrency(totalInvestido)}</p>
+              <p className="text-xs opacity-80 mt-2">Valor total da carteira</p>
+            </div>
+            <TrendingUp className="w-10 h-10 opacity-70" />
+          </div>
+        </CardContent>
+      </Card>
 
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Card 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid', 
-            borderColor: 'divider',
-            borderRadius: 3
-          }}
-        >
-          <CardContent>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Projeção 12 Meses
-            </Typography>
-            <Typography variant="h4" fontWeight={700} color="success.main">
-              {formatCurrency(totalProjetado)}
-            </Typography>
-            <Chip 
-              label="Estimativa" 
-              size="small" 
-              sx={{ mt: 1 }}
-              color="success"
-              variant="outlined"
-            />
-          </CardContent>
-        </Card>
-      </Grid>
+      {/* Projeção 12 Meses */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm text-slate-600 mb-2">Projeção 12 Meses</p>
+              <p className="text-3xl font-bold text-green-600">{formatCurrency(totalProjetado)}</p>
+              <Badge variant="success" className="mt-2 text-xs">
+                Estimativa
+              </Badge>
+            </div>
+            <DollarSign className="w-10 h-10 text-green-600 opacity-50" />
+          </div>
+        </CardContent>
+      </Card>
 
-      <Grid size={{ xs: 12, md: 4 }}>
-        <Card 
-          elevation={0} 
-          sx={{ 
-            border: '1px solid', 
-            borderColor: 'divider',
-            borderRadius: 3
-          }}
-        >
-          <CardContent>
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              Dividend Yield Médio
-            </Typography>
-            <Typography variant="h4" fontWeight={700} color="primary.main">
-              {averageYield.toFixed(2)}%
-            </Typography>
-            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-              Retorno anual estimado
-            </Typography>
-          </CardContent>
-        </Card>
-      </Grid>
-    </Grid>
+      {/* Dividend Yield Médio */}
+      <Card>
+        <CardContent className="p-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <p className="text-sm text-slate-600 mb-2">Dividend Yield Médio</p>
+              <p className="text-3xl font-bold text-orange-500">{averageYield.toFixed(2)}%</p>
+              <p className="text-xs text-slate-500 mt-2">Retorno anual estimado</p>
+            </div>
+            <Target className="w-10 h-10 text-orange-500 opacity-50" />
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
-

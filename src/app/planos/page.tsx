@@ -2,32 +2,20 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  Grid,
-  Typography,
-  List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
-  Chip,
-} from '@mui/material';
-import {
-  Check as CheckIcon,
-  Close as CloseIcon,
-  Stars as StarsIcon,
-} from '@mui/icons-material';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Check, X, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
+import { Loading } from '@/components/ui/loading';
+import { cn } from '@/lib/utils';
 
 export default function PlansPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
+  const [downgradeLoading, setDowngradeLoading] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -67,6 +55,49 @@ export default function PlansPage() {
     }
   };
 
+  const handleDowngrade = async () => {
+    if (!user) return;
+
+    const confirmDowngrade = confirm(
+      'Tem certeza que deseja fazer downgrade para o plano gratuito?\n\n' +
+      'Você perderá acesso a:\n' +
+      '• Investimentos ilimitados\n' +
+      '• Contato com gestora financeira\n' +
+      '• Agendamento de reuniões\n' +
+      '• Suporte prioritário'
+    );
+
+    if (!confirmDowngrade) return;
+
+    try {
+      setDowngradeLoading(true);
+
+      const response = await fetch('/api/stripe/cancel-subscription', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: user.uid,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        alert('Downgrade realizado com sucesso! Redirecionando...');
+        window.location.reload(); // Recarregar para atualizar o contexto
+      } else {
+        alert(data.error || 'Erro ao fazer downgrade');
+      }
+    } catch (error) {
+      console.error('Erro ao fazer downgrade:', error);
+      alert('Erro ao processar downgrade');
+    } finally {
+      setDowngradeLoading(false);
+    }
+  };
+
   const freePlanFeatures = [
     { text: 'Dashboard com visão geral', included: true },
     { text: 'Explorar investimentos', included: true },
@@ -92,221 +123,216 @@ export default function PlansPage() {
   ];
 
   if (loading || !user) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading size="lg" />;
   }
 
   const isPaidUser = user.subscriptionStatus === 'paid';
 
   return (
     <MainLayout>
-      <Box>
-        <Box sx={{ textAlign: 'center', mb: 6 }}>
-          <Typography variant="h3" gutterBottom sx={{ fontWeight: 'bold' }}>
-            Escolha seu Plano 💎
-          </Typography>
-          <Typography variant="h6" color="text.secondary">
-            Invista no seu futuro financeiro com as ferramentas certas
-          </Typography>
-          {isPaidUser && (
-            <Chip
-              label="Você está no Plano PRO"
-              color="success"
-              icon={<StarsIcon />}
-              sx={{ mt: 2, py: 2, px: 1, fontSize: '1rem' }}
-            />
-          )}
-        </Box>
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-bold text-slate-900">
+            {isPaidUser ? 'Sua Assinatura 💎' : 'Escolha seu Plano 💎'}
+          </h1>
+          <p className="text-xl text-slate-600">
+            {isPaidUser 
+              ? 'Você tem acesso total a todos os recursos premium' 
+              : 'Invista no seu futuro financeiro com as ferramentas certas'
+            }
+          </p>
+        </div>
 
-        <Grid container spacing={4} sx={{ maxWidth: 1200, mx: 'auto' }}>
+        {/* Mensagem de assinatura ativa */}
+        {isPaidUser && (
+          <Card className="max-w-3xl mx-auto border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+            <CardContent className="p-8 text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center">
+                  <CheckCircle2 className="w-10 h-10 text-green-600" />
+                </div>
+              </div>
+              
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
+                  <Sparkles className="w-6 h-6 text-orange-500" />
+                  Você é PRO!
+                  <Sparkles className="w-6 h-6 text-orange-500" />
+                </h2>
+                <p className="text-lg text-slate-700 mb-4">
+                  Sua assinatura está <strong className="text-green-600">ativa</strong> e você tem acesso a todos os recursos premium.
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6">
+                  <div className="text-center">
+                    <div className="text-3xl mb-1">✅</div>
+                    <div className="text-sm font-medium text-slate-700">Investimentos Ilimitados</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl mb-1">📞</div>
+                    <div className="text-sm font-medium text-slate-700">Contato com Gestora</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl mb-1">📅</div>
+                    <div className="text-sm font-medium text-slate-700">Agendamento de Reuniões</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="text-3xl mb-1">🎯</div>
+                    <div className="text-sm font-medium text-slate-700">Suporte Prioritário</div>
+                  </div>
+                </div>
+              </div>
+
+              <Button
+                size="lg"
+                onClick={() => router.push('/dashboard')}
+                className="w-full max-w-md mx-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+              >
+                Ir para Dashboard
+              </Button>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Planos */}
+        <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
           {/* Plano Gratuito */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                border: '2px solid',
-                borderColor: 'divider',
-                position: 'relative',
-              }}
-            >
-              <CardContent sx={{ flexGrow: 1, p: 4 }}>
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-                  Gratuito
-                </Typography>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 'bold', display: 'inline' }}>
-                    R$ 0
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary" sx={{ display: 'inline' }}>
-                    /mês
-                  </Typography>
-                </Box>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                  Perfeito para começar sua jornada de investimentos
-                </Typography>
+          <Card className="flex flex-col">
+            <CardHeader className="pb-8">
+              <CardTitle className="text-2xl">Gratuito</CardTitle>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">R$ 0</span>
+                <span className="text-xl text-slate-600">/mês</span>
+              </div>
+              <CardDescription className="text-base mt-2">
+                Perfeito para começar sua jornada de investimentos
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-6">
+              <ul className="space-y-3">
+                {freePlanFeatures.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    {feature.included ? (
+                      <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    ) : (
+                      <X className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" />
+                    )}
+                    <span className={cn(
+                      "text-sm",
+                      feature.included ? "text-slate-700" : "text-slate-400"
+                    )}>
+                      {feature.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-                <List>
-                  {freePlanFeatures.map((feature, index) => (
-                    <ListItem key={index} disablePadding sx={{ mb: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        {feature.included ? (
-                          <CheckIcon color="success" />
-                        ) : (
-                          <CloseIcon color="error" />
-                        )}
-                      </ListItemIcon>
-                      <ListItemText
-                        primary={feature.text}
-                        primaryTypographyProps={{
-                          color: feature.included ? 'text.primary' : 'text.disabled',
-                        }}
-                      />
-                    </ListItem>
-                  ))}
-                </List>
-
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  size="large"
-                  disabled={!isPaidUser}
-                  sx={{ mt: 3 }}
-                >
-                  {!isPaidUser ? 'Plano Atual' : 'Fazer Downgrade'}
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
+              <Button
+                variant="outline"
+                size="lg"
+                className="w-full"
+                disabled={!isPaidUser || downgradeLoading}
+                onClick={isPaidUser ? handleDowngrade : undefined}
+              >
+                {downgradeLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Processando...
+                  </>
+                ) : !isPaidUser ? (
+                  'Plano Atual'
+                ) : (
+                  'Fazer Downgrade'
+                )}
+              </Button>
+            </CardContent>
+          </Card>
 
           {/* Plano PRO */}
-          <Grid size={{ xs: 12, md: 6 }}>
-            <Card
-              sx={{
-                height: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                border: '3px solid',
-                borderColor: 'primary.main',
-                position: 'relative',
-                background: 'linear-gradient(135deg, #667eea11 0%, #764ba211 100%)',
-              }}
-            >
-              <Chip
-                label="RECOMENDADO"
-                color="primary"
-                sx={{
-                  position: 'absolute',
-                  top: -12,
-                  right: 20,
-                  fontWeight: 'bold',
-                }}
-              />
-              <CardContent sx={{ flexGrow: 1, p: 4 }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
-                  <Typography variant="h4" sx={{ fontWeight: 'bold', mr: 1 }}>
-                    PRO
-                  </Typography>
-                  <StarsIcon color="primary" />
-                </Box>
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="h3" sx={{ fontWeight: 'bold', display: 'inline' }}>
-                    R$ 49,90
-                  </Typography>
-                  <Typography variant="h6" color="text.secondary" sx={{ display: 'inline' }}>
-                    /mês
-                  </Typography>
-                </Box>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-                  Para investidores que querem ir além e ter suporte especializado
-                </Typography>
+          <Card className="flex flex-col border-2 border-orange-500 relative bg-gradient-to-br from-orange-50/50 to-amber-50/50">
+            <div className="absolute -top-3 right-6">
+              <Badge className="bg-orange-500 hover:bg-orange-600">
+                RECOMENDADO
+              </Badge>
+            </div>
+            <CardHeader className="pb-8">
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-2xl">PRO</CardTitle>
+                <Sparkles className="w-6 h-6 text-orange-500" />
+              </div>
+              <div className="mt-4">
+                <span className="text-4xl font-bold">R$ 29,90</span>
+                <span className="text-xl text-slate-600">/mês</span>
+              </div>
+              <CardDescription className="text-base mt-2">
+                Para investidores que querem ir além e ter suporte especializado
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="flex-1 space-y-6">
+              <ul className="space-y-3">
+                {proPlanFeatures.map((feature, index) => (
+                  <li key={index} className="flex items-start gap-3">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    <span className="text-sm text-slate-700">
+                      {feature.text}
+                    </span>
+                  </li>
+                ))}
+              </ul>
 
-                <List>
-                  {proPlanFeatures.map((feature, index) => (
-                    <ListItem key={index} disablePadding sx={{ mb: 1 }}>
-                      <ListItemIcon sx={{ minWidth: 36 }}>
-                        <CheckIcon color="success" />
-                      </ListItemIcon>
-                      <ListItemText primary={feature.text} />
-                    </ListItem>
-                  ))}
-                </List>
+              <Button
+                size="lg"
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+                disabled={isPaidUser || checkoutLoading}
+                onClick={handleSubscribe}
+              >
+                {checkoutLoading ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                    Processando...
+                  </>
+                ) : isPaidUser ? (
+                  'Plano Atual'
+                ) : (
+                  'Assinar Agora'
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
 
-                <Button
-                  variant="contained"
-                  fullWidth
-                  size="large"
-                  disabled={isPaidUser || checkoutLoading}
-                  onClick={handleSubscribe}
-                  sx={{
-                    mt: 3,
-                    py: 1.5,
-                    background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-                    boxShadow: '0 3px 5px 2px rgba(102, 126, 234, .3)',
-                  }}
-                >
-                  {checkoutLoading ? (
-                    <CircularProgress size={24} color="inherit" />
-                  ) : isPaidUser ? (
-                    'Plano Atual'
-                  ) : (
-                    'Assinar Agora'
-                  )}
-                </Button>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-
-        {/* FAQ ou informações adicionais */}
-        <Card sx={{ maxWidth: 1200, mx: 'auto', mt: 6 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" gutterBottom sx={{ fontWeight: 'bold', mb: 3 }}>
-              Por que escolher o Plano PRO?
-            </Typography>
-            <Grid container spacing={3}>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    🎯 Suporte Especializado
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Tenha acesso direto a gestores financeiros experientes para tirar dúvidas
-                    e receber orientações personalizadas.
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    📊 Investimentos Ilimitados
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Construa um portfólio diversificado sem limitações, explorando todas as
-                    oportunidades do mercado.
-                  </Typography>
-                </Box>
-              </Grid>
-              <Grid size={{ xs: 12, md: 4 }}>
-                <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 'bold' }}>
-                    📅 Agendamento Flexível
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Agende reuniões com gestoras nos horários que funcionam para você e
-                    receba consultoria personalizada.
-                  </Typography>
-                </Box>
-              </Grid>
-            </Grid>
+        {/* Benefícios */}
+        <Card className="max-w-5xl mx-auto">
+          <CardHeader>
+            <CardTitle className="text-2xl">Por que escolher o Plano PRO?</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-3 gap-6">
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold">🎯 Suporte Especializado</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Tenha acesso direto a gestores financeiros experientes para tirar dúvidas
+                  e receber orientações personalizadas.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold">📊 Investimentos Ilimitados</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Construa um portfólio diversificado sem limitações, explorando todas as
+                  oportunidades do mercado.
+                </p>
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-bold">📅 Agendamento Flexível</h3>
+                <p className="text-sm text-slate-600 leading-relaxed">
+                  Agende reuniões com gestoras nos horários que funcionam para você e
+                  receba consultoria personalizada.
+                </p>
+              </div>
+            </div>
           </CardContent>
         </Card>
-      </Box>
+      </div>
     </MainLayout>
   );
 }
-

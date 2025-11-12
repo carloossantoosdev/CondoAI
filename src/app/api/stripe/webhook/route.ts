@@ -1,8 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { stripe, STRIPE_WEBHOOK_SECRET } from '@/services/stripe/config';
-import { db } from '@/services/firebase/config';
-import { doc, updateDoc, serverTimestamp } from 'firebase/firestore';
+import { createClient } from '@supabase/supabase-js';
 import Stripe from 'stripe';
+
+// Cliente Supabase com service_role para operações administrativas
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+);
 
 export async function POST(req: NextRequest) {
   const body = await req.text();
@@ -35,16 +40,24 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;
-        const userId = session.metadata?.firebaseUID;
+        const userId = session.metadata?.supabaseUID;
         
         if (userId && session.subscription) {
-          const userRef = doc(db, 'users', userId);
-          await updateDoc(userRef, {
-            subscriptionStatus: 'paid',
-            subscriptionId: session.subscription,
-            customerId: session.customer,
-            updatedAt: serverTimestamp(),
-          });
+          const { error } = await supabaseAdmin
+            .from('users')
+            .update({
+              subscription_status: 'paid',
+              subscription_id: session.subscription as string,
+              customer_id: session.customer as string,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+
+          if (error) {
+            console.error('Erro ao atualizar usuário:', error);
+          } else {
+            console.log('Usuário atualizado para PRO:', userId);
+          }
         }
         break;
       }
@@ -55,16 +68,23 @@ export async function POST(req: NextRequest) {
           subscription.customer as string
         );
         
-        if ('metadata' in customer && customer.metadata?.firebaseUID) {
-          const userId = customer.metadata.firebaseUID;
-          const userRef = doc(db, 'users', userId);
-          
+        if ('metadata' in customer && customer.metadata?.supabaseUID) {
+          const userId = customer.metadata.supabaseUID;
           const status = subscription.status === 'active' ? 'paid' : 'free';
           
-          await updateDoc(userRef, {
-            subscriptionStatus: status,
-            updatedAt: serverTimestamp(),
-          });
+          const { error } = await supabaseAdmin
+            .from('users')
+            .update({
+              subscription_status: status,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+
+          if (error) {
+            console.error('Erro ao atualizar assinatura:', error);
+          } else {
+            console.log('Assinatura atualizada:', userId, status);
+          }
         }
         break;
       }
@@ -75,15 +95,23 @@ export async function POST(req: NextRequest) {
           subscription.customer as string
         );
         
-        if ('metadata' in customer && customer.metadata?.firebaseUID) {
-          const userId = customer.metadata.firebaseUID;
-          const userRef = doc(db, 'users', userId);
+        if ('metadata' in customer && customer.metadata?.supabaseUID) {
+          const userId = customer.metadata.supabaseUID;
           
-          await updateDoc(userRef, {
-            subscriptionStatus: 'free',
-            subscriptionId: null,
-            updatedAt: serverTimestamp(),
-          });
+          const { error } = await supabaseAdmin
+            .from('users')
+            .update({
+              subscription_status: 'free',
+              subscription_id: null,
+              updated_at: new Date().toISOString(),
+            })
+            .eq('id', userId);
+
+          if (error) {
+            console.error('Erro ao cancelar assinatura:', error);
+          } else {
+            console.log('Assinatura cancelada:', userId);
+          }
         }
         break;
       }

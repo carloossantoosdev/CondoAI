@@ -2,37 +2,41 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Tab,
-  Tabs,
-  TextField,
-  Typography,
-  Avatar,
-  Alert,
-  Pagination,
-} from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import {
-  TrendingUp,
-  TrendingDown,
-  Add as AddIcon,
-} from '@mui/icons-material';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { Asset, InvestmentType } from '@/types';
 import { getAllAssets, getAssetsByType, PaginatedAssets } from '@/services/api/investmentService';
-import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import { db } from '@/services/firebase/config';
+import { createClient } from '@/lib/supabase/client';
+import { TrendingUp, TrendingDown, Plus, Loader2, CheckCircle2, DollarSign, TrendingUpIcon } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from '@/components/ui/pagination';
+import { Loading } from '@/components/ui/loading';
+import { cn } from '@/lib/utils';
+
+// Criar instância única do cliente Supabase
+const supabaseClient = createClient();
 
 interface AssetWithAnalysis extends Asset {
   precoTeto?: number;
@@ -93,8 +97,8 @@ export default function InvestmentPage() {
     }
   };
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: 'todos' | InvestmentType) => {
-    setCurrentTab(newValue);
+  const handleTabChange = (newValue: string) => {
+    setCurrentTab(newValue as 'todos' | InvestmentType);
     setPage(1);
   };
 
@@ -104,16 +108,12 @@ export default function InvestmentPage() {
     setModalOpen(true);
     setAnalisePrecoTeto(null);
     
-    // Buscar análise de preço teto apenas para ações
     if (asset.tipo === 'acao') {
       try {
         setLoadingAnalise(true);
         const response = await fetch(`/api/fundamentals/${asset.ticker}`);
         const data = await response.json();
         
-        console.log(`[MODAL] Análise recebida para ${asset.ticker}:`, data);
-        
-        // Sempre mostrar análise, mesmo se for "SEM DADOS"
         if (data && data.recomendacao) {
           setAnalisePrecoTeto({
             precoTeto: data.precoTeto || 0,
@@ -144,24 +144,31 @@ export default function InvestmentPage() {
       
       const valorTotal = selectedAsset.preco * quantidade;
       
-      const investmentsRef = collection(db, 'portfolios', user.uid, 'investments');
-      await addDoc(investmentsRef, {
-        type: selectedAsset.tipo,
-        ticker: selectedAsset.ticker,
-        nome: selectedAsset.nome,
-        quantidade,
-        precoMedio: selectedAsset.preco,
-        dataCompra: serverTimestamp(),
-        valorTotal,
-      });
+      const { error } = await supabaseClient
+        .from('investments')
+        .insert({
+          user_id: user.uid,
+          type: selectedAsset.tipo,
+          ticker: selectedAsset.ticker,
+          nome: selectedAsset.nome,
+          quantidade,
+          preco_medio: selectedAsset.preco,
+          data_compra: new Date().toISOString(),
+          valor_total: valorTotal,
+        });
+
+      if (error) {
+        console.error('Erro ao investir:', error);
+        alert(`Erro ao realizar investimento: ${error.message}`);
+        return;
+      }
 
       setSuccessMessage(`Investimento em ${selectedAsset.ticker} realizado com sucesso!`);
       handleCloseModal();
-
-      setTimeout(() => {
-        setSuccessMessage('');
-      }, 5000);
-    } catch (error) {
+      
+      // Limpar mensagem após 5 segundos
+      setTimeout(() => setSuccessMessage(''), 5000);
+    } catch (error: any) {
       console.error('Erro ao investir:', error);
       alert('Erro ao realizar investimento. Tente novamente.');
     } finally {
@@ -177,31 +184,23 @@ export default function InvestmentPage() {
   };
 
   if (loading || !user) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading size="lg" />;
   }
 
-  // Paginação - usar servidor para ações, local para outros
+  // Paginação
   const useServerPagination = currentTab === 'acao' || currentTab === 'todos';
   
   let paginatedAssets: AssetWithAnalysis[];
   let totalPages: number;
 
   if (useServerPagination) {
-    // Para ações: os dados já vêm paginados do servidor (50 por página)
-    // Vamos dividir esses 50 em 5 páginas locais de 10 itens
-    const localPage = ((page - 1) % 5) + 1; // Página local de 1 a 5
+    const localPage = ((page - 1) % 5) + 1;
     paginatedAssets = assets.slice(
       (localPage - 1) * itemsPerPage,
       localPage * itemsPerPage
     );
-    // Total de páginas = (páginas do servidor * 5)
     totalPages = serverTotalPages * 5;
   } else {
-    // Para outros tipos: paginação local simples
     paginatedAssets = assets.slice(
       (page - 1) * itemsPerPage,
       page * itemsPerPage
@@ -209,18 +208,15 @@ export default function InvestmentPage() {
     totalPages = Math.ceil(assets.length / itemsPerPage);
   }
 
-  const handlePageChange = async (event: React.ChangeEvent<unknown>, value: number) => {
+  const handlePageChange = async (value: number) => {
     if (useServerPagination) {
-      // Calcular qual página do servidor buscar
       const serverPage = Math.ceil(value / 5);
       const currentServerPage = Math.ceil(page / 5);
       
-      // Se mudou de página no servidor, buscar novos dados
       if (serverPage !== currentServerPage) {
         await loadAssets(serverPage);
         setPage(value);
       } else {
-        // Apenas mudança local
         setPage(value);
       }
     } else {
@@ -232,461 +228,357 @@ export default function InvestmentPage() {
 
   return (
     <MainLayout>
-      <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
-        {/* Header com melhor espaçamento */}
-        <Box sx={{ mb: 5 }}>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              fontWeight: 700, 
-              mb: 1,
-              fontSize: { xs: '1.75rem', md: '2.125rem' }
-            }}
-          >
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
             Explorar Investimentos 📊
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
+          </h1>
+          <p className="text-slate-600">
             Descubra as melhores oportunidades de investimento para seu perfil
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {successMessage && (
-          <Alert 
-            severity="success" 
-            sx={{ 
-              mb: 4, 
-              borderRadius: 2,
-              '& .MuiAlert-message': {
-                fontSize: '0.95rem'
-              }
-            }} 
-            onClose={() => setSuccessMessage('')}
-          >
-            {successMessage}
+          <Alert variant="success" className="border-green-200">
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertDescription>{successMessage}</AlertDescription>
           </Alert>
         )}
 
-        {/* Tabs com design melhorado */}
-        <Card 
-          elevation={0} 
-          sx={{ 
-            mb: 4, 
-            borderRadius: 3,
-            border: '1px solid',
-            borderColor: 'divider'
-          }}
-        >
-          <Tabs 
-            value={currentTab} 
-            onChange={handleTabChange}
-            variant="scrollable"
-            scrollButtons="auto"
-            sx={{
-              px: 2,
-              '& .MuiTab-root': {
-                fontWeight: 600,
-                fontSize: '0.95rem',
-                textTransform: 'none',
-                minHeight: 56,
-              },
-              '& .Mui-selected': {
-                color: 'primary.main',
-              }
-            }}
-          >
-            <Tab label="Todos" value="todos" />
-            <Tab label="Ações" value="acao" />
-            <Tab label="Fundos" value="fundo" />
-            <Tab label="Renda Fixa" value="rendaFixa" />
-            <Tab label="Cripto" value="cripto" />
-          </Tabs>
+        {/* Tabs */}
+        <Card>
+          <CardContent className="p-4">
+            <Tabs value={currentTab} onValueChange={handleTabChange}>
+              <TabsList className="grid w-full grid-cols-5">
+                <TabsTrigger value="todos">Todos</TabsTrigger>
+                <TabsTrigger value="acao">Ações</TabsTrigger>
+                <TabsTrigger value="fundo">Fundos</TabsTrigger>
+                <TabsTrigger value="rendaFixa">Renda Fixa</TabsTrigger>
+                <TabsTrigger value="cripto">Cripto</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardContent>
         </Card>
 
+        {/* Assets Grid */}
         {loadingAssets ? (
-          <Box sx={{ display: 'flex', justifyContent: 'center', py: 12 }}>
-            <CircularProgress size={50} />
-          </Box>
+          <Loading size="lg" />
         ) : (
-          <Grid container spacing={{ xs: 2, sm: 3 }}>
-            {paginatedAssets.map((asset) => (
-              <Grid key={`${asset.tipo}-${asset.ticker}`} size={{ xs: 12, sm: 6, lg: 4 }}>
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {paginatedAssets.map((asset) => (
                 <Card 
-                  elevation={0}
-                  sx={{ 
-                    height: '100%', 
-                    display: 'flex', 
-                    flexDirection: 'column',
-                    borderRadius: 3,
-                    border: '1px solid',
-                    borderColor: 'divider',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-6px)',
-                      boxShadow: '0 12px 24px rgba(0,0,0,0.1)',
-                      borderColor: 'primary.main',
-                    }
-                  }}
+                  key={`${asset.tipo}-${asset.ticker}`}
+                  className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 hover:border-red-300"
                 >
-                  <CardContent sx={{ flexGrow: 1, p: 3 }}>
-                    {/* Header do Card com Avatar e Info */}
-                    <Box sx={{ display: 'flex', alignItems: 'flex-start', mb: 3 }}>
-                      {asset.logo ? (
-                        <Avatar 
-                          src={asset.logo} 
-                          sx={{ 
-                            mr: 2, 
-                            width: 56, 
-                            height: 56,
-                            border: '2px solid',
-                            borderColor: 'divider',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                          }} 
-                        />
-                      ) : (
-                        <Avatar 
-                          sx={{ 
-                            mr: 2, 
-                            width: 56, 
-                            height: 56, 
-                            bgcolor: 'primary.main',
-                            fontWeight: 700,
-                            fontSize: '1.25rem',
-                            boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                          }}
-                        >
-                          {asset.ticker.substring(0, 2)}
-                        </Avatar>
-                      )}
-                      <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-                        <Typography 
-                          variant="h6" 
-                          sx={{ 
-                            fontWeight: 700,
-                            fontSize: '1.125rem',
-                            mb: 0.5,
-                            overflow: 'hidden',
-                            textOverflow: 'ellipsis',
-                            whiteSpace: 'nowrap'
-                          }}
-                        >
+                  <CardContent className="p-5">
+                    {/* Header */}
+                    <div className="flex items-start gap-3 mb-4">
+                      <Avatar className="h-12 w-12 border-2 border-slate-200">
+                        {asset.logo ? (
+                          <AvatarImage src={asset.logo} alt={asset.ticker} />
+                        ) : (
+                          <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold text-sm">
+                            {asset.ticker.substring(0, 2)}
+                          </AvatarFallback>
+                        )}
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <h3 className="font-bold text-slate-900 truncate">
                           {asset.ticker}
-                        </Typography>
-                        <Chip
-                          label={
-                            asset.tipo === 'acao' ? 'Ação' :
-                            asset.tipo === 'fundo' ? 'Fundo' :
-                            asset.tipo === 'rendaFixa' ? 'Renda Fixa' :
-                            'Cripto'
-                          }
-                          size="small"
-                          sx={{
-                            fontWeight: 600,
-                            fontSize: '0.75rem',
-                            height: 24,
-                            borderRadius: 1.5,
-                            bgcolor: 'primary.light',
-                            color: 'white',
-                          }}
-                        />
-                      </Box>
-                    </Box>
+                        </h3>
+                        <Badge 
+                          variant="secondary" 
+                          className="mt-1 text-xs"
+                        >
+                          {asset.tipo === 'acao' ? 'Ação' :
+                           asset.tipo === 'fundo' ? 'Fundo' :
+                           asset.tipo === 'rendaFixa' ? 'Renda Fixa' :
+                           'Cripto'}
+                        </Badge>
+                      </div>
+                    </div>
 
-                    {/* Nome do Ativo */}
-                    <Typography 
-                      variant="body2" 
-                      color="text.secondary" 
-                      sx={{ 
-                        mb: 3, 
-                        minHeight: 42,
-                        lineHeight: 1.5,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 2,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                      }}
-                    >
+                    {/* Nome */}
+                    <p className="text-sm text-slate-600 mb-4 line-clamp-2 min-h-[40px]">
                       {asset.nome}
-                    </Typography>
+                    </p>
 
                     {/* Preço e Variação */}
-                    <Box 
-                      sx={{ 
-                        display: 'flex', 
-                        justifyContent: 'space-between', 
-                        alignItems: 'center', 
-                        mb: 2,
-                        p: 2,
-                        bgcolor: 'grey.50',
-                        borderRadius: 2,
-                      }}
-                    >
-                      <Box>
-                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                          Preço Atual
-                        </Typography>
-                        <Typography variant="h5" sx={{ fontWeight: 700, lineHeight: 1 }}>
-                          {formatCurrency(asset.preco)}
-                        </Typography>
-                      </Box>
-                      {asset.variacao !== undefined && (
-                        <Chip
-                          icon={asset.variacao >= 0 ? <TrendingUp /> : <TrendingDown />}
-                          label={`${asset.variacao >= 0 ? '+' : ''}${asset.variacao.toFixed(2)}%`}
-                          color={asset.variacao >= 0 ? 'success' : 'error'}
-                          size="small"
-                          sx={{
-                            fontWeight: 700,
-                            '& .MuiChip-icon': {
-                              fontSize: 18
-                            }
-                          }}
-                        />
-                      )}
-                    </Box>
+                    <div className="bg-slate-50 rounded-lg p-3 mb-4">
+                      <div className="flex justify-between items-center">
+                        <div>
+                          <span className="text-xs text-slate-500 block mb-1">
+                            Preço Atual
+                          </span>
+                          <span className="text-xl font-bold text-slate-900">
+                            {formatCurrency(asset.preco)}
+                          </span>
+                        </div>
+                        {asset.variacao !== undefined && (
+                          <Badge
+                            variant={asset.variacao >= 0 ? "success" : "destructive"}
+                            className="gap-1"
+                          >
+                            {asset.variacao >= 0 ? (
+                              <TrendingUp className="w-3 h-3" />
+                            ) : (
+                              <TrendingDown className="w-3 h-3" />
+                            )}
+                            {asset.variacao >= 0 ? '+' : ''}{asset.variacao.toFixed(2)}%
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
 
                     {/* Botão Investir */}
                     <Button
-                      variant="contained"
-                      fullWidth
-                      size="large"
-                      startIcon={<AddIcon />}
                       onClick={() => handleOpenModal(asset)}
-                      sx={{
-                        py: 1.5,
-                        borderRadius: 2,
-                        fontWeight: 600,
-                        fontSize: '0.95rem',
-                        textTransform: 'none',
-                        boxShadow: 'none',
-                        '&:hover': {
-                          boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                        }
-                      }}
+                      className="w-full gap-2"
+                      size="lg"
                     >
+                      <Plus className="w-4 h-4" />
                       Investir
                     </Button>
                   </CardContent>
                 </Card>
-              </Grid>
-            ))}
-          </Grid>
+              ))}
+            </div>
+
+            {/* Paginação */}
+            {totalPages > 1 && (
+              <div className="flex flex-col items-center gap-4 mt-8">
+                <p className="text-sm text-slate-600">
+                  Mostrando {((page - 1) * itemsPerPage) + 1}-{Math.min(page * itemsPerPage, totalCount)} de {totalCount.toLocaleString('pt-BR')} investimentos
+                </p>
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious 
+                        onClick={() => page > 1 && handlePageChange(page - 1)}
+                        className={cn(page === 1 && "pointer-events-none opacity-50")}
+                      />
+                    </PaginationItem>
+                    
+                    {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                      const pageNum = Math.max(1, Math.min(page - 2, totalPages - 4)) + i;
+                      if (pageNum > totalPages) return null;
+                      
+                      return (
+                        <PaginationItem key={pageNum}>
+                          <PaginationLink
+                            onClick={() => handlePageChange(pageNum)}
+                            isActive={page === pageNum}
+                          >
+                            {pageNum}
+                          </PaginationLink>
+                        </PaginationItem>
+                      );
+                    })}
+                    
+                    <PaginationItem>
+                      <PaginationNext 
+                        onClick={() => page < totalPages && handlePageChange(page + 1)}
+                        className={cn(page === totalPages && "pointer-events-none opacity-50")}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
+          </>
         )}
 
-        {/* Paginação */}
-        {!loadingAssets && totalPages > 1 && (
-          <Box 
-            sx={{ 
-              display: 'flex', 
-              flexDirection: 'column',
-              alignItems: 'center',
-              mt: 6,
-              mb: 4,
-              gap: 2
-            }}
-          >
-            <Typography variant="body2" color="text.secondary">
-              Mostrando {((page - 1) * itemsPerPage) + 1}-{Math.min(page * itemsPerPage, totalCount)} de {totalCount.toLocaleString('pt-BR')} investimentos
-            </Typography>
-            <Pagination 
-              count={totalPages}
-              page={page}
-              onChange={handlePageChange}
-              color="primary"
-              size="large"
-              showFirstButton
-              showLastButton
-              sx={{
-                '& .MuiPaginationItem-root': {
-                  fontWeight: 600,
-                  fontSize: '1rem',
-                },
-              }}
-            />
-          </Box>
-        )}
+        {/* Modal de Investimento - Design Melhorado */}
+        <Dialog open={modalOpen} onOpenChange={setModalOpen}>
+          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-white">
+            <DialogHeader className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-14 w-14 border-2 border-orange-200">
+                  {selectedAsset?.logo ? (
+                    <AvatarImage src={selectedAsset.logo} alt={selectedAsset.ticker} />
+                  ) : (
+                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold">
+                      {selectedAsset?.ticker.substring(0, 2)}
+                    </AvatarFallback>
+                  )}
+                </Avatar>
+                <div>
+                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                    {selectedAsset?.ticker}
+                  </DialogTitle>
+                  <DialogDescription className="text-base text-slate-600">
+                    {selectedAsset?.nome}
+                  </DialogDescription>
+                </div>
+              </div>
+            </DialogHeader>
 
-        {/* Modal de Investimento com design melhorado */}
-        <Dialog 
-          open={modalOpen} 
-          onClose={handleCloseModal} 
-          maxWidth="sm" 
-          fullWidth
-          PaperProps={{
-            sx: {
-              borderRadius: 3,
-              p: 1
-            }
-          }}
-        >
-          <DialogTitle sx={{ pb: 1 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700 }}>
-              Investir em {selectedAsset?.ticker}
-            </Typography>
-          </DialogTitle>
-          <DialogContent sx={{ pt: 2 }}>
             {selectedAsset && (
-              <Box>
-                <Typography 
-                  variant="body2" 
-                  color="text.secondary" 
-                  sx={{ mb: 3, lineHeight: 1.6 }}
-                >
-                  {selectedAsset.nome}
-                </Typography>
-                
-                <Box sx={{ mb: 3 }}>
-                  <Card 
-                    elevation={0} 
-                    sx={{ 
-                      bgcolor: 'grey.50', 
-                      borderRadius: 2,
-                      p: 2,
-                      mb: 2
-                    }}
-                  >
-                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
-                      Preço Atual
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {formatCurrency(selectedAsset.preco)}
-                    </Typography>
-                  </Card>
-
-                  {/* Análise de Preço Teto (só para ações) */}
-                  {selectedAsset.tipo === 'acao' && (
-                    <Box sx={{ mb: 3 }}>
-                      {loadingAnalise ? (
-                        <Card elevation={0} sx={{ bgcolor: 'grey.50', borderRadius: 2, p: 2 }}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                            <CircularProgress size={16} />
-                            <Typography variant="caption" color="text.secondary">
-                              Analisando preço...
-                            </Typography>
-                          </Box>
-                        </Card>
-                      ) : analisePrecoTeto ? (
-                        <Card 
-                          elevation={0}
-                          sx={{ 
-                            bgcolor: 
-                              analisePrecoTeto.recomendacao === 'SEM DADOS' ? '#f5f5f5' :
-                              analisePrecoTeto.recomendacao.includes('COMPRA') ? '#e8f5e9' : 
-                              analisePrecoTeto.recomendacao === 'MANTER' ? '#fff3e0' : 
-                              analisePrecoTeto.recomendacao === 'NEUTRO' ? '#e3f2fd' : '#ffebee',
-                            borderRadius: 2,
-                            p: 2,
-                            border: '1px solid',
-                            borderColor: 
-                              analisePrecoTeto.recomendacao === 'SEM DADOS' ? 'grey.300' :
-                              analisePrecoTeto.recomendacao.includes('COMPRA') ? 'success.light' : 
-                              analisePrecoTeto.recomendacao === 'MANTER' ? 'warning.light' : 
-                              analisePrecoTeto.recomendacao === 'NEUTRO' ? 'info.light' : 'error.light'
-                          }}
+              <div className="space-y-5 py-4">
+                {/* Preço Atual - Destaque */}
+                <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-orange-200 shadow-sm">
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-medium text-slate-500 block mb-1 uppercase tracking-wide">
+                          💰 Preço Atual
+                        </span>
+                        <span className="text-3xl font-bold text-slate-900">
+                          {formatCurrency(selectedAsset.preco)}
+                        </span>
+                      </div>
+                      {selectedAsset.variacao !== undefined && (
+                        <Badge
+                          variant={selectedAsset.variacao >= 0 ? "success" : "destructive"}
+                          className="gap-1 px-3 py-1"
                         >
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 600 }}>
+                          {selectedAsset.variacao >= 0 ? (
+                            <TrendingUp className="w-4 h-4" />
+                          ) : (
+                            <TrendingDown className="w-4 h-4" />
+                          )}
+                          {selectedAsset.variacao >= 0 ? '+' : ''}{selectedAsset.variacao.toFixed(2)}%
+                        </Badge>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+
+                {/* Análise de Preço Teto */}
+                {selectedAsset.tipo === 'acao' && (
+                  <div>
+                    {loadingAnalise ? (
+                      <Card className="bg-slate-50 border-0">
+                        <CardContent className="p-4 flex items-center gap-2">
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                          <span className="text-sm text-slate-600">Analisando preço...</span>
+                        </CardContent>
+                      </Card>
+                    ) : analisePrecoTeto ? (
+                      <Card 
+                        className={cn(
+                          "border-2",
+                          analisePrecoTeto.recomendacao === 'SEM DADOS' ? 'bg-slate-50 border-slate-200' :
+                          analisePrecoTeto.recomendacao.includes('COMPRA') ? 'bg-green-50 border-green-300' : 
+                          analisePrecoTeto.recomendacao === 'MANTER' ? 'bg-yellow-50 border-yellow-300' : 
+                          analisePrecoTeto.recomendacao === 'NEUTRO' ? 'bg-sky-50 border-sky-300' : 
+                          'bg-orange-50 border-orange-300'
+                        )}
+                      >
+                        <CardContent className="p-4 space-y-3">
+                          <span className="text-sm font-semibold text-slate-700 block">
                             📊 Análise de Preço Teto (Método Bazin)
-                          </Typography>
+                          </span>
                           
                           {analisePrecoTeto.recomendacao !== 'SEM DADOS' && (
-                            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                              <Typography variant="caption" color="text.secondary">
-                                Preço Teto Calculado
-                              </Typography>
-                              <Typography variant="body2" fontWeight={700}>
+                            <div className="flex justify-between items-center">
+                              <span className="text-xs text-slate-600">Preço Teto Calculado</span>
+                              <span className="text-sm font-bold text-slate-900">
                                 {formatCurrency(analisePrecoTeto.precoTeto)}
-                              </Typography>
-                            </Box>
+                              </span>
+                            </div>
                           )}
                           
-                          <Chip
-                            label={analisePrecoTeto.recomendacao}
-                            size="small"
-                            color={
-                              analisePrecoTeto.recomendacao === 'SEM DADOS' ? 'default' :
+                          <Badge
+                            variant={
+                              analisePrecoTeto.recomendacao === 'SEM DADOS' ? 'secondary' :
                               analisePrecoTeto.recomendacao.includes('COMPRA') ? 'success' :
                               analisePrecoTeto.recomendacao === 'MANTER' ? 'warning' : 
-                              analisePrecoTeto.recomendacao === 'NEUTRO' ? 'info' : 'error'
+                              'destructive'
                             }
-                            sx={{ fontWeight: 700, width: '100%', mb: 1 }}
-                          />
+                            className="w-full justify-center py-2"
+                          >
+                            {analisePrecoTeto.recomendacao}
+                          </Badge>
                           
-                          <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                          <p className="text-xs text-slate-600">
                             {analisePrecoTeto.explicacao}
-                          </Typography>
-                        </Card>
-                      ) : null}
-                    </Box>
-                  )}
+                          </p>
+                        </CardContent>
+                      </Card>
+                    ) : null}
+                  </div>
+                )}
 
-                  <TextField
-                    label="Quantidade"
-                    type="number"
-                    value={quantidade}
-                    onChange={(e) => setQuantidade(Math.max(1, parseInt(e.target.value) || 1))}
-                    fullWidth
-                    sx={{ 
-                      mb: 3,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                      }
-                    }}
-                    inputProps={{ min: 1 }}
-                  />
-                  
-                  <Card
-                    elevation={0}
-                    sx={{
-                      p: 3,
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      borderRadius: 2,
-                      color: 'white',
-                    }}
-                  >
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      Total a Investir
-                    </Typography>
-                    <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                {/* Quantidade */}
+                <div className="space-y-3">
+                  <Label htmlFor="quantidade" className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+                    📊 Quantidade
+                  </Label>
+                  <div className="relative">
+                    <Input
+                      id="quantidade"
+                      type="number"
+                      min="1"
+                      value={quantidade}
+                      onChange={(e) => setQuantidade(Math.max(1, parseInt(e.target.value) || 1))}
+                      className="text-xl font-semibold h-14 pl-4 pr-12 border-2 border-slate-200 focus:border-orange-400"
+                      placeholder="1"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
+                      {quantidade > 1 ? 'cotas' : 'cota'}
+                    </div>
+                  </div>
+                  <p className="text-xs text-slate-500">
+                    Preço unitário: {formatCurrency(selectedAsset.preco)}
+                  </p>
+                </div>
+
+                {/* Resumo do Investimento */}
+                <Card className="bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-0 text-white shadow-lg">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-sm font-medium opacity-90 flex items-center gap-2">
+                        <DollarSign className="w-4 h-4" />
+                        Total a Investir
+                      </span>
+                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-0">
+                        {quantidade} {quantidade > 1 ? 'cotas' : 'cota'}
+                      </Badge>
+                    </div>
+                    <span className="text-4xl font-bold block">
                       {formatCurrency(selectedAsset.preco * quantidade)}
-                    </Typography>
-                  </Card>
-                </Box>
-              </Box>
+                    </span>
+                    <p className="text-xs opacity-75 mt-2">
+                      Este valor será debitado da sua conta
+                    </p>
+                  </CardContent>
+                </Card>
+              </div>
             )}
+
+            <DialogFooter className="gap-2 sm:gap-0">
+              <Button
+                variant="outline"
+                onClick={handleCloseModal}
+                disabled={investing}
+                className="flex-1 h-12"
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleInvest}
+                disabled={investing}
+                className="flex-1 gap-2 h-12 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold shadow-lg"
+              >
+                {investing ? (
+                  <>
+                    <Loader2 className="w-5 h-5 animate-spin" />
+                    Processando...
+                  </>
+                ) : (
+                  <>
+                    <TrendingUpIcon className="w-5 h-5" />
+                    Confirmar Investimento
+                  </>
+                )}
+              </Button>
+            </DialogFooter>
           </DialogContent>
-          <DialogActions sx={{ px: 3, pb: 3, pt: 2 }}>
-            <Button 
-              onClick={handleCloseModal} 
-              disabled={investing}
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3
-              }}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="contained"
-              onClick={handleInvest}
-              disabled={investing}
-              sx={{
-                textTransform: 'none',
-                fontWeight: 600,
-                borderRadius: 2,
-                px: 3,
-                boxShadow: 'none',
-                '&:hover': {
-                  boxShadow: '0 4px 12px rgba(25, 118, 210, 0.3)',
-                }
-              }}
-            >
-              {investing ? <CircularProgress size={24} color="inherit" /> : 'Confirmar Investimento'}
-            </Button>
-          </DialogActions>
         </Dialog>
-      </Box>
+      </div>
     </MainLayout>
   );
 }
-

@@ -2,14 +2,16 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Box, CircularProgress } from '@mui/material';
-import { useAuth } from '@/context/AuthContext';
+import { Loading } from '@/components/ui/loading';
 
 export default function Home() {
   const router = useRouter();
-  const { user, loading } = useAuth();
 
   useEffect(() => {
+    // Redireciona direto para o dashboard (sem autenticação)
+    router.push('/dashboard');
+    
+    /* VERSÃO ORIGINAL COM AUTENTICAÇÃO (COMENTADA)
     if (!loading) {
       if (user) {
         router.push('/dashboard');
@@ -17,19 +19,12 @@ export default function Home() {
         router.push('/login');
       }
     }
-  }, [user, loading, router]);
+    */
+  }, [router]);
 
   return (
-    <Box
-      sx={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        minHeight: '100vh',
-      }}
-    >
-      <CircularProgress />
-    </Box>
+    <div className="min-h-screen flex items-center justify-center bg-slate-50">
+      <Loading size="lg" />
+    </div>
   );
 }
-

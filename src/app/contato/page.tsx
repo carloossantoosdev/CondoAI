@@ -1,31 +1,25 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  CircularProgress,
-  TextField,
-  Typography,
-  Alert,
-  Chip,
-} from '@mui/material';
-import Grid from '@mui/material/Grid2';
-import {
-  Send as SendIcon,
-  Lock as LockIcon,
-  CheckCircle as CheckCircleIcon,
-} from '@mui/icons-material';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
-import { collection, addDoc, serverTimestamp, query, where, getDocs } from 'firebase/firestore';
-import { db } from '@/services/firebase/config';
+import { createClient } from '@/lib/supabase/client';
 import { Appointment } from '@/types';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Loading } from '@/components/ui/loading';
+import { Send, CheckCircle2, Loader2, Info, LightbulbIcon, Sparkles } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+// Criar instância única do cliente Supabase
+const supabaseClient = createClient();
 
 type ValuePiece = Date | null;
 type Value = ValuePiece | [ValuePiece, ValuePiece];
@@ -45,19 +39,20 @@ export default function ContactPage() {
   const [success, setSuccess] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
     }
-    // STRIPE DESABILITADO: Remover verificação de plano pago
-    // else if (!loading && user && user.subscriptionStatus !== 'paid') {
-    //   router.push('/planos');
-    // }
   }, [user, loading, router]);
 
+  // Verificar se o usuário é PRO
+  const isPaidUser = user?.subscriptionStatus === 'paid';
+
   useEffect(() => {
-    if (user) {
+    if (user && !hasLoadedRef.current) {
+      hasLoadedRef.current = true;
       loadAppointments();
     }
   }, [user]);
@@ -66,14 +61,29 @@ export default function ContactPage() {
     if (!user) return;
 
     try {
-      const appointmentsRef = collection(db, 'appointments');
-      const q = query(appointmentsRef, where('userId', '==', user.uid));
-      const snapshot = await getDocs(q);
+      const { data, error } = await supabaseClient
+        .from('appointments')
+        .select('*')
+        .eq('user_id', user.uid)
+        .order('created_at', { ascending: false });
 
-      const appointmentsList: Appointment[] = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data(),
-      } as Appointment));
+      if (error) {
+        console.error('Erro ao carregar agendamentos:', error);
+        return;
+      }
+
+      const appointmentsList: Appointment[] = data.map(item => ({
+        id: item.id,
+        userId: item.user_id,
+        userEmail: item.user_email,
+        userName: item.user_name,
+        userPhone: item.user_phone,
+        date: item.date,
+        time: item.time,
+        message: item.message,
+        status: item.status,
+        createdAt: new Date(item.created_at),
+      }));
 
       setAppointments(appointmentsList);
     } catch (error) {
@@ -97,25 +107,30 @@ export default function ContactPage() {
       const dateObj = Array.isArray(selectedDate) ? selectedDate[0] : selectedDate;
       if (!dateObj) return;
 
-      const appointmentsRef = collection(db, 'appointments');
-      await addDoc(appointmentsRef, {
-        userId: user.uid,
-        userEmail: user.email,
-        userName: user.displayName,
-        userPhone: phone,
-        date: dateObj.toISOString().split('T')[0],
-        time: selectedTime,
-        message,
-        status: 'pending',
-        createdAt: serverTimestamp(),
-      });
+      const { error } = await supabaseClient
+        .from('appointments')
+        .insert({
+          user_id: user.uid,
+          user_email: user.email,
+          user_name: user.displayName,
+          user_phone: phone,
+          date: dateObj.toISOString().split('T')[0],
+          time: selectedTime,
+          message,
+          status: 'pending',
+        });
+
+      if (error) {
+        console.error('Erro ao criar agendamento:', error);
+        alert('Erro ao enviar solicitação. Tente novamente.');
+        return;
+      }
 
       setSuccess(true);
       setMessage('');
       setPhone('');
       setSelectedTime('');
       
-      // Recarregar agendamentos
       await loadAppointments();
 
       setTimeout(() => {
@@ -130,316 +145,244 @@ export default function ContactPage() {
   };
 
   if (loading || !user) {
+    return <Loading size="lg" />;
+  }
+
+  // Se não for usuário PRO, mostrar mensagem
+  if (!isPaidUser) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
+      <MainLayout>
+        <div className="space-y-6">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              Contato com Gestora 📞
+            </h1>
+            <p className="text-slate-600">
+              Agende uma reunião com nossa equipe de especialistas
+            </p>
+          </div>
+
+          <Card className="max-w-2xl mx-auto border-2 border-orange-200">
+            <CardContent className="p-12 text-center space-y-6">
+              <div className="flex justify-center">
+                <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center">
+                  <Sparkles className="w-10 h-10 text-orange-500" />
+                </div>
+              </div>
+
+              <div>
+                <h2 className="text-2xl font-bold text-slate-900 mb-3">
+                  Recurso Exclusivo PRO 🌟
+                </h2>
+                <p className="text-slate-700 mb-4">
+                  O contato direto com nossa gestora financeira e agendamento de reuniões 
+                  é um recurso exclusivo para assinantes do <strong>Plano PRO</strong>.
+                </p>
+                <p className="text-slate-600 text-sm">
+                  Faça upgrade agora e tenha acesso a consultoria especializada, 
+                  agendamento de reuniões e suporte prioritário!
+                </p>
+              </div>
+
+              <Button
+                size="lg"
+                onClick={() => router.push('/planos')}
+                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+              >
+                <Sparkles className="w-5 h-5 mr-2" />
+                Ver Planos PRO
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      </MainLayout>
     );
   }
 
-  // STRIPE DESABILITADO: Comentado verificação de plano pago
-  // if (user.subscriptionStatus !== 'paid') {
-  //   return (
-  //     <MainLayout>
-  //       <Card sx={{ maxWidth: 600, mx: 'auto', mt: 8, textAlign: 'center' }}>
-  //         <CardContent sx={{ p: 6 }}>
-  //           <LockIcon sx={{ fontSize: 80, color: 'warning.main', mb: 2 }} />
-  //           <Typography variant="h4" gutterBottom sx={{ fontWeight: 'bold' }}>
-  //             Recurso Exclusivo PRO
-  //           </Typography>
-  //           <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-  //             O contato direto com gestora financeira está disponível apenas para assinantes do plano PRO.
-  //           </Typography>
-  //           <Button
-  //             variant="contained"
-  //             size="large"
-  //             onClick={() => router.push('/planos')}
-  //             sx={{
-  //               background: 'linear-gradient(45deg, #667eea 30%, #764ba2 90%)',
-  //               boxShadow: '0 3px 5px 2px rgba(102, 126, 234, .3)',
-  //             }}
-  //           >
-  //             Ver Planos
-  //           </Button>
-  //         </CardContent>
-  //       </Card>
-  //     </MainLayout>
-  //   );
-  // }
-
   return (
     <MainLayout>
-      <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
-        {/* Header com melhor espaçamento */}
-        <Box sx={{ mb: 5 }}>
-          <Typography 
-            variant="h4" 
-            sx={{ 
-              fontWeight: 700, 
-              mb: 1,
-              fontSize: { xs: '1.75rem', md: '2.125rem' }
-            }}
-          >
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
             Contato com Gestora 📞
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
+          </h1>
+          <p className="text-slate-600">
             Agende uma reunião e receba orientação especializada para seus investimentos
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {success && (
-          <Alert 
-            severity="success" 
-            icon={<CheckCircleIcon />} 
-            sx={{ 
-              mb: 4,
-              borderRadius: 2,
-              '& .MuiAlert-message': {
-                fontSize: '0.95rem'
-              }
-            }}
-          >
-            Solicitação enviada com sucesso! A gestora entrará em contato em breve.
+          <Alert variant="success" className="border-green-200">
+            <CheckCircle2 className="h-4 w-4" />
+            <AlertDescription>
+              Solicitação enviada com sucesso! A gestora entrará em contato em breve.
+            </AlertDescription>
           </Alert>
         )}
 
-        <Grid container spacing={{ xs: 2, sm: 3 }}>
+        <div className="grid lg:grid-cols-3 gap-6">
           {/* Formulário de Agendamento */}
-          <Grid size={{ xs: 12, lg: 7 }}>
-            <Card 
-              elevation={0}
-              sx={{ 
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'divider'
-              }}
-            >
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 4, fontSize: '1.5rem' }}>
-                  Agendar Reunião
-                </Typography>
-
-                <form onSubmit={handleSubmit}>
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="body1" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+          <div className="lg:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-2xl">Agendar Reunião</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                  {/* Calendar */}
+                  <div>
+                    <Label className="text-base font-semibold mb-3 block">
                       Selecione a Data
-                    </Typography>
-                    <Box sx={{ 
-                      '& .react-calendar': { 
-                        width: '100%', 
-                        border: '1px solid',
-                        borderColor: 'divider',
-                        borderRadius: 3,
-                        padding: 2,
-                        fontFamily: 'inherit',
-                      },
-                      '& .react-calendar__tile--active': {
-                        background: 'primary.main',
-                        borderRadius: 2,
-                      },
-                      '& .react-calendar__tile:hover': {
-                        background: 'grey.100',
-                        borderRadius: 2,
-                      }
-                    }}>
+                    </Label>
+                    <div className="border rounded-lg p-4">
                       <Calendar
                         onChange={setSelectedDate}
                         value={selectedDate}
                         minDate={new Date()}
                         locale="pt-BR"
+                        className="w-full border-0"
                       />
-                    </Box>
-                  </Box>
+                    </div>
+                  </div>
 
-                  <Box sx={{ mb: 4 }}>
-                    <Typography variant="body1" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+                  {/* Horários */}
+                  <div>
+                    <Label className="text-base font-semibold mb-3 block">
                       Selecione o Horário
-                    </Typography>
-                    <Grid container spacing={1.5}>
+                    </Label>
+                    <div className="grid grid-cols-4 gap-2">
                       {AVAILABLE_TIMES.map((time) => (
-                        <Grid key={time} size={{ xs: 4 }}>
-                          <Chip
-                            label={time}
-                            onClick={() => setSelectedTime(time)}
-                            color={selectedTime === time ? 'primary' : 'default'}
-                            sx={{
-                              width: '100%',
-                              cursor: 'pointer',
-                              fontWeight: 600,
-                              py: 2.5,
-                              borderRadius: 2,
-                              transition: 'all 0.2s',
-                              '&:hover': {
-                                transform: 'translateY(-2px)',
-                                boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-                              },
-                            }}
-                          />
-                        </Grid>
+                        <Button
+                          key={time}
+                          type="button"
+                          variant={selectedTime === time ? "default" : "outline"}
+                          onClick={() => setSelectedTime(time)}
+                          className="font-semibold"
+                        >
+                          {time}
+                        </Button>
                       ))}
-                    </Grid>
-                  </Box>
+                    </div>
+                  </div>
 
-                  <TextField
-                    label="Telefone (opcional)"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    fullWidth
-                    sx={{ 
-                      mb: 3,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                      }
-                    }}
-                    placeholder="(11) 99999-9999"
-                  />
+                  {/* Telefone */}
+                  <div>
+                    <Label htmlFor="phone">Telefone (opcional)</Label>
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="(11) 99999-9999"
+                      className="mt-2"
+                    />
+                  </div>
 
-                  <TextField
-                    label="Mensagem"
-                    value={message}
-                    onChange={(e) => setMessage(e.target.value)}
-                    multiline
-                    rows={4}
-                    fullWidth
-                    required
-                    sx={{ 
-                      mb: 4,
-                      '& .MuiOutlinedInput-root': {
-                        borderRadius: 2,
-                      }
-                    }}
-                    placeholder="Descreva brevemente o assunto que gostaria de discutir..."
-                  />
+                  {/* Mensagem */}
+                  <div>
+                    <Label htmlFor="message">Mensagem *</Label>
+                    <textarea
+                      id="message"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      required
+                      rows={4}
+                      placeholder="Descreva brevemente o assunto que gostaria de discutir..."
+                      className="mt-2 w-full rounded-md border border-input bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+                    />
+                  </div>
 
+                  {/* Botão Submit */}
                   <Button
                     type="submit"
-                    variant="contained"
-                    fullWidth
-                    size="large"
+                    size="lg"
+                    className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
                     disabled={submitting || !selectedTime || !message.trim()}
-                    startIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <SendIcon />}
-                    sx={{
-                      py: 1.5,
-                      borderRadius: 2,
-                      fontWeight: 600,
-                      fontSize: '1rem',
-                      textTransform: 'none',
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                      boxShadow: 'none',
-                      '&:hover': {
-                        boxShadow: '0 8px 16px rgba(102, 126, 234, 0.3)',
-                      },
-                    }}
                   >
-                    {submitting ? 'Enviando...' : 'Solicitar Reunião'}
+                    {submitting ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                        Enviando...
+                      </>
+                    ) : (
+                      <>
+                        <Send className="w-4 h-4 mr-2" />
+                        Solicitar Reunião
+                      </>
+                    )}
                   </Button>
                 </form>
               </CardContent>
             </Card>
-          </Grid>
+          </div>
 
-          {/* Agendamentos */}
-          <Grid size={{ xs: 12, lg: 5 }}>
-            <Card 
-              elevation={0}
-              sx={{ 
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'divider',
-                mb: 3
-              }}
-            >
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" gutterBottom sx={{ fontWeight: 700, mb: 4, fontSize: '1.5rem' }}>
-                  Suas Solicitações
-                </Typography>
-
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Agendamentos */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Suas Solicitações</CardTitle>
+              </CardHeader>
+              <CardContent>
                 {loadingAppointments ? (
-                  <Box sx={{ display: 'flex', justifyContent: 'center', py: 8 }}>
-                    <CircularProgress size={40} />
-                  </Box>
+                  <Loading size="md" />
                 ) : appointments.length === 0 ? (
-                  <Box sx={{ textAlign: 'center', py: 8 }}>
-                    <Typography variant="body2" color="text.secondary" sx={{ fontSize: '0.95rem' }}>
-                      Você ainda não tem agendamentos
-                    </Typography>
-                  </Box>
+                  <p className="text-sm text-slate-600 text-center py-8">
+                    Você ainda não tem agendamentos
+                  </p>
                 ) : (
-                  <Box>
+                  <div className="space-y-3">
                     {appointments.map((appointment) => (
-                      <Card 
-                        key={appointment.id} 
-                        elevation={0}
-                        sx={{ 
-                          mb: 2, 
-                          bgcolor: 'grey.50',
-                          borderRadius: 2,
-                          border: '1px solid',
-                          borderColor: 'divider',
-                          transition: 'all 0.2s',
-                          '&:hover': {
-                            bgcolor: 'grey.100',
-                            transform: 'translateX(4px)',
-                          }
-                        }}
-                      >
-                        <CardContent sx={{ p: 2.5 }}>
-                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1.5 }}>
-                            <Typography variant="body1" sx={{ fontWeight: 700 }}>
+                      <Card key={appointment.id} className="bg-slate-50">
+                        <CardContent className="p-4">
+                          <div className="flex justify-between items-start mb-2">
+                            <span className="font-semibold text-slate-900">
                               {appointment.date}
-                            </Typography>
-                            <Chip
-                              label={
-                                appointment.status === 'pending' ? 'Pendente' :
-                                appointment.status === 'confirmed' ? 'Confirmado' :
-                                'Cancelado'
-                              }
-                              color={
+                            </span>
+                            <Badge
+                              variant={
                                 appointment.status === 'pending' ? 'warning' :
                                 appointment.status === 'confirmed' ? 'success' :
-                                'error'
+                                'destructive'
                               }
-                              size="small"
-                              sx={{ fontWeight: 600 }}
-                            />
-                          </Box>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 1, fontWeight: 500 }}>
+                            >
+                              {appointment.status === 'pending' ? 'Pendente' :
+                               appointment.status === 'confirmed' ? 'Confirmado' :
+                               'Cancelado'}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-slate-600 mb-2">
                             Horário: {appointment.time}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+                          </p>
+                          <p className="text-sm text-slate-600 line-clamp-2">
                             {appointment.message}
-                          </Typography>
+                          </p>
                         </CardContent>
                       </Card>
                     ))}
-                  </Box>
+                  </div>
                 )}
               </CardContent>
             </Card>
 
-            <Card 
-              elevation={0}
-              sx={{ 
-                bgcolor: 'info.light',
-                borderRadius: 3,
-                border: '1px solid',
-                borderColor: 'info.main'
-              }}
-            >
-              <CardContent sx={{ p: 3 }}>
-                <Typography variant="body2" sx={{ fontWeight: 700, mb: 1.5, fontSize: '1rem' }}>
-                  💡 Dica
-                </Typography>
-                <Typography variant="body2" sx={{ lineHeight: 1.7 }}>
-                  Prepare suas dúvidas com antecedência para aproveitar melhor a reunião com a gestora.
-                  Tenha em mãos informações sobre seus investimentos atuais e objetivos financeiros.
-                </Typography>
+            {/* Dica */}
+            <Card className="bg-orange-50 border-orange-200">
+              <CardContent className="p-4">
+                <div className="flex gap-3">
+                  <LightbulbIcon className="w-5 h-5 text-orange-600 flex-shrink-0 mt-0.5" />
+                  <div>
+                    <p className="font-semibold text-orange-900 mb-2">💡 Dica</p>
+                    <p className="text-sm text-orange-800 leading-relaxed">
+                      Prepare suas dúvidas com antecedência para aproveitar melhor a reunião com a gestora.
+                      Tenha em mãos informações sobre seus investimentos atuais e objetivos financeiros.
+                    </p>
+                  </div>
+                </div>
               </CardContent>
             </Card>
-          </Grid>
-        </Grid>
-      </Box>
+          </div>
+        </div>
+      </div>
     </MainLayout>
   );
 }
-

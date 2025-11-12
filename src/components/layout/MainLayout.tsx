@@ -1,51 +1,25 @@
 'use client';
 
 import { useState, ReactNode } from 'react';
-import {
-  AppBar,
-  Box,
-  CssBaseline,
-  Drawer,
-  IconButton,
-  List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
-  Toolbar,
-  Typography,
-  Avatar,
-  Menu,
-  MenuItem,
-  Chip,
-  Divider,
-  ThemeProvider,
-  createTheme,
-} from '@mui/material';
-import {
-  Menu as MenuIcon,
-  Dashboard as DashboardIcon,
-  TrendingUp as TrendingUpIcon,
-  CreditCard as CreditCardIcon,
-  ContactMail as ContactMailIcon,
-  Logout as LogoutIcon,
-  Paid as PaidIcon,
-} from '@mui/icons-material';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-
-const drawerWidth = 260;
-
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: '#1976d2',
-    },
-    secondary: {
-      main: '#dc004e',
-    },
-  },
-});
+import {
+  LayoutDashboard,
+  TrendingUp,
+  DollarSign,
+  CreditCard,
+  Mail,
+  Menu,
+  LogOut,
+  X,
+  User,
+  Lightbulb,
+  Newspaper,
+} from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { cn } from '@/lib/utils';
 
 interface MenuItem {
   text: string;
@@ -55,196 +29,219 @@ interface MenuItem {
 }
 
 const menuItems: MenuItem[] = [
-  { text: 'Dashboard', icon: <DashboardIcon />, path: '/dashboard' },
-  { text: 'Investimentos', icon: <TrendingUpIcon />, path: '/investimentos' },
-  { text: 'Dividendos', icon: <PaidIcon />, path: '/dividendos' },
-  { text: 'Planos', icon: <CreditCardIcon />, path: '/planos' },
-  { text: 'Contato com Gestora', icon: <ContactMailIcon />, path: '/contato' },
+  { text: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/dashboard' },
+  { text: 'Perfil', icon: <User className="w-5 h-5" />, path: '/perfil' },
+  { text: 'Investimentos', icon: <TrendingUp className="w-5 h-5" />, path: '/investimentos' },
+  { text: 'Dividendos', icon: <DollarSign className="w-5 h-5" />, path: '/dividendos' },
+  { text: 'Notícias', icon: <Newspaper className="w-5 h-5" />, path: '/noticias' },
+  { text: 'Dicas', icon: <Lightbulb className="w-5 h-5" />, path: '/dicas' },
+  { text: 'Planos', icon: <CreditCard className="w-5 h-5" />, path: '/planos' },
+  { text: 'Contato', icon: <Mail className="w-5 h-5" />, path: '/contato' },
 ];
 
 export default function MainLayout({ children }: { children: ReactNode }) {
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const router = useRouter();
   const pathname = usePathname();
   const { user, signOut } = useAuth();
 
-  const handleDrawerToggle = () => {
-    setMobileOpen(!mobileOpen);
-  };
-
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
+  const handleNavigation = (path: string) => {
+    router.push(path);
+    setSidebarOpen(false);
   };
 
   const handleLogout = async () => {
     await signOut();
-    handleMenuClose();
     router.push('/login');
   };
 
-  const handleNavigation = (path: string) => {
-    router.push(path);
-    setMobileOpen(false);
-  };
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Sidebar Desktop */}
+      <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
+        <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 bg-white px-6 pb-4">
+          <div className="flex h-16 shrink-0 items-center border-b border-slate-100">
+            <h1 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+              💰 Finanças Pro
+            </h1>
+          </div>
+          <nav className="flex flex-1 flex-col">
+            <ul role="list" className="flex flex-1 flex-col gap-y-1">
+              {menuItems.map((item) => {
+                const isActive = pathname === item.path;
+                const isDisabled = item.requiresPaid && user?.subscriptionStatus !== 'paid';
+                
+                return (
+                  <li key={item.text}>
+                    <button
+                      onClick={() => !isDisabled && handleNavigation(item.path)}
+                      disabled={isDisabled}
+                      className={cn(
+                        'group flex w-full gap-x-3 rounded-lg p-3 text-sm font-semibold transition-all',
+                        isActive
+                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
+                          : 'text-slate-700 hover:bg-slate-100 hover:text-orange-600',
+                        isDisabled && 'opacity-50 cursor-not-allowed'
+                      )}
+                    >
+                      {item.icon}
+                      <span className="flex-1 text-left">{item.text}</span>
+                      {item.requiresPaid && user?.subscriptionStatus !== 'paid' && (
+                        <Badge variant="warning" className="text-xs">PRO</Badge>
+                      )}
+                    </button>
+                  </li>
+                );
+              })}
+              
+              {/* User Section at Bottom */}
+              <li className="mt-auto pt-4 border-t border-slate-200">
+                <div className="flex items-center gap-x-3 p-3 rounded-lg bg-slate-50">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'Usuário'} />
+                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-violet-600 text-white font-semibold">
+                      {user?.displayName?.charAt(0) || 'U'}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate">
+                      {user?.displayName || 'Usuário'}
+                    </p>
+                    <Badge 
+                      variant={user?.subscriptionStatus === 'paid' ? 'success' : 'secondary'}
+                      className="text-xs mt-1"
+                    >
+                      {user?.subscriptionStatus === 'paid' ? 'PRO' : 'Gratuito'}
+                    </Badge>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="h-8 w-8 text-slate-500 hover:text-orange-600"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </aside>
 
-  const drawer = (
-    <div>
-      <Toolbar>
-        <Typography variant="h6" noWrap component="div" sx={{ fontWeight: 'bold' }}>
-          💰 InvestPlatform
-        </Typography>
-      </Toolbar>
-      <Divider />
-      <List>
-        {menuItems.map((item) => {
-          const isDisabled = item.requiresPaid && user?.subscriptionStatus !== 'paid';
-          const isActive = pathname === item.path;
-          
-          return (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                onClick={() => !isDisabled && handleNavigation(item.path)}
-                disabled={isDisabled}
-                selected={isActive}
-                sx={{
-                  '&.Mui-selected': {
-                    backgroundColor: 'primary.main',
-                    color: 'white',
-                    '&:hover': {
-                      backgroundColor: 'primary.dark',
-                    },
-                    '& .MuiListItemIcon-root': {
-                      color: 'white',
-                    },
-                  },
-                }}
-              >
-                <ListItemIcon sx={{ color: isActive ? 'inherit' : 'action.active' }}>
-                  {item.icon}
-                </ListItemIcon>
-                <ListItemText 
-                  primary={item.text}
-                  primaryTypographyProps={{
-                    fontSize: '0.9rem',
-                  }}
-                />
-                {item.requiresPaid && user?.subscriptionStatus !== 'paid' && (
-                  <Chip label="PRO" size="small" color="warning" sx={{ ml: 1 }} />
-                )}
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
+      {/* Mobile Sidebar */}
+      {sidebarOpen && (
+        <>
+          <div 
+            className="fixed inset-0 z-40 bg-black/50 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
+          <aside className="fixed inset-y-0 z-50 flex w-64 flex-col lg:hidden">
+            <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
+              <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100">
+                <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                  💰 Finanças Pro
+                </h1>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSidebarOpen(false)}
+                  className="h-8 w-8"
+                >
+                  <X className="h-5 w-5" />
+                </Button>
+              </div>
+              <nav className="flex flex-1 flex-col">
+                <ul role="list" className="flex flex-1 flex-col gap-y-1">
+                  {menuItems.map((item) => {
+                    const isActive = pathname === item.path;
+                    const isDisabled = item.requiresPaid && user?.subscriptionStatus !== 'paid';
+                    
+                    return (
+                      <li key={item.text}>
+                        <button
+                          onClick={() => !isDisabled && handleNavigation(item.path)}
+                          disabled={isDisabled}
+                          className={cn(
+                            'group flex w-full gap-x-3 rounded-lg p-3 text-sm font-semibold transition-all',
+                            isActive
+                              ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
+                              : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600',
+                            isDisabled && 'opacity-50 cursor-not-allowed'
+                          )}
+                        >
+                          {item.icon}
+                          <span className="flex-1 text-left">{item.text}</span>
+                          {item.requiresPaid && user?.subscriptionStatus !== 'paid' && (
+                            <Badge variant="warning" className="text-xs">PRO</Badge>
+                          )}
+                        </button>
+                      </li>
+                    );
+                  })}
+                  
+                  <li className="mt-auto pt-4 border-t border-slate-200">
+                    <div className="flex items-center gap-x-3 p-3 rounded-lg bg-slate-50">
+                      <Avatar className="h-10 w-10">
+                        <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'Usuário'} />
+                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-violet-600 text-white font-semibold">
+                          {user?.displayName?.charAt(0) || 'U'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate">
+                          {user?.displayName || 'Usuário'}
+                        </p>
+                        <Badge 
+                          variant={user?.subscriptionStatus === 'paid' ? 'success' : 'secondary'}
+                          className="text-xs mt-1"
+                        >
+                          {user?.subscriptionStatus === 'paid' ? 'PRO' : 'Gratuito'}
+                        </Badge>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={handleLogout}
+                        className="h-8 w-8 text-slate-500 hover:text-orange-600"
+                      >
+                        <LogOut className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </li>
+                </ul>
+              </nav>
+            </div>
+          </aside>
+        </>
+      )}
+
+      {/* Main Content */}
+      <div className="lg:pl-64">
+        {/* Top Bar Mobile */}
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 bg-white px-4 shadow-sm lg:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSidebarOpen(true)}
+            className="-m-2.5"
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <div className="flex-1">
+            <h2 className="text-sm font-semibold text-slate-900">
+              {menuItems.find(item => item.path === pathname)?.text || 'Finanças Pro'}
+            </h2>
+          </div>
+        </div>
+
+        {/* Page Content */}
+        <main className="py-8 px-4 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   );
-
-  return (
-    <ThemeProvider theme={theme}>
-      <Box sx={{ display: 'flex' }}>
-        <CssBaseline />
-        <AppBar
-          position="fixed"
-          sx={{
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            ml: { sm: `${drawerWidth}px` },
-          }}
-        >
-          <Toolbar>
-            <IconButton
-              color="inherit"
-              aria-label="abrir menu"
-              edge="start"
-              onClick={handleDrawerToggle}
-              sx={{ mr: 2, display: { sm: 'none' } }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-              {menuItems.find(item => item.path === pathname)?.text || 'Investment Platform'}
-            </Typography>
-            {user && (
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                <Chip
-                  label={user.subscriptionStatus === 'paid' ? 'Plano PRO' : 'Plano Gratuito'}
-                  color={user.subscriptionStatus === 'paid' ? 'success' : 'default'}
-                  size="small"
-                />
-                <IconButton onClick={handleMenuOpen} sx={{ p: 0 }}>
-                  <Avatar
-                    alt={user.displayName || 'Usuário'}
-                    src={user.photoURL || ''}
-                  />
-                </IconButton>
-                <Menu
-                  anchorEl={anchorEl}
-                  open={Boolean(anchorEl)}
-                  onClose={handleMenuClose}
-                >
-                  <MenuItem disabled>
-                    <Typography variant="body2">{user.email}</Typography>
-                  </MenuItem>
-                  <Divider />
-                  <MenuItem onClick={handleLogout}>
-                    <ListItemIcon>
-                      <LogoutIcon fontSize="small" />
-                    </ListItemIcon>
-                    Sair
-                  </MenuItem>
-                </Menu>
-              </Box>
-            )}
-          </Toolbar>
-        </AppBar>
-        <Box
-          component="nav"
-          sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
-        >
-          <Drawer
-            variant="temporary"
-            open={mobileOpen}
-            onClose={handleDrawerToggle}
-            ModalProps={{
-              keepMounted: true,
-            }}
-            sx={{
-              display: { xs: 'block', sm: 'none' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-            }}
-          >
-            {drawer}
-          </Drawer>
-          <Drawer
-            variant="permanent"
-            sx={{
-              display: { xs: 'none', sm: 'block' },
-              '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-            }}
-            open
-          >
-            {drawer}
-          </Drawer>
-        </Box>
-        <Box
-          component="main"
-          sx={{
-            flexGrow: 1,
-            p: 3,
-            width: { sm: `calc(100% - ${drawerWidth}px)` },
-            minHeight: '100vh',
-            backgroundColor: '#f5f5f5',
-          }}
-        >
-          <Toolbar />
-          {children}
-        </Box>
-      </Box>
-    </ThemeProvider>
-  );
 }
-

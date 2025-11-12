@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import yahooFinance from 'yahoo-finance2';
-import { getCachedQuote, setCachedQuote } from '@/services/firebase/quotesCache';
+import { getCachedQuote, setCachedQuote } from '@/services/supabase/quotesCache';
 
 export async function GET(
   request: NextRequest,

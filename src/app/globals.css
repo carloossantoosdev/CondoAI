@@ -89,3 +89,71 @@ p {
   line-height: 1.7;
 }
 
+/* Gradientes Personalizados */
+.gradient-orange-amber {
+  background: linear-gradient(to right, #f97316, #f59e0b);
+}
+
+.gradient-orange-amber-br {
+  background: linear-gradient(to bottom right, #f97316, #f59e0b);
+}
+
+.gradient-pink-rose {
+  background: linear-gradient(to bottom right, #ec4899, #e11d48);
+}
+
+.gradient-cyan-blue {
+  background: linear-gradient(to bottom right, #06b6d4, #2563eb);
+}
+
+.gradient-amber-orange {
+  background: linear-gradient(to bottom right, #f59e0b, #ea580c);
+}
+
+.gradient-green-emerald {
+  background: linear-gradient(to right, #10b981, #059669);
+}
+
+.gradient-orange-light {
+  background: linear-gradient(to bottom right, #fed7aa, #fdba74);
+}
+
+.gradient-slate {
+  background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
+}
+
+.gradient-blue-violet {
+  background: linear-gradient(to bottom right, #2563eb, #7c3aed);
+}
+
+.gradient-red-orange {
+  background: linear-gradient(to right, #dc2626, #ea580c);
+}
+
+.gradient-orange-50 {
+  background: linear-gradient(to bottom right, #fff7ed, #ffedd5);
+}
+
+.gradient-orange-via-amber {
+  background: linear-gradient(to bottom right, #f97316, #ea580c, #f59e0b);
+}
+
+.gradient-green-50 {
+  background: linear-gradient(to bottom right, #f0fdf4, #d1fae5);
+}
+
+.gradient-green-50-horizontal {
+  background: linear-gradient(to right, #f0fdf4, #d1fae5);
+}
+
+/* Garantir backgrounds sólidos em modais */
+[role="dialog"],
+[data-radix-dialog-content] {
+  background-color: white !important;
+}
+
+.dark [role="dialog"],
+.dark [data-radix-dialog-content] {
+  background-color: hsl(var(--card)) !important;
+}
+

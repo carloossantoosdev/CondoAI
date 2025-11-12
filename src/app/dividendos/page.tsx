@@ -1,27 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Chip,
-  CircularProgress,
-  Alert
-} from '@mui/material';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { DividendsSummary } from '@/components/DividendsSummary';
-import { collection, getDocs } from 'firebase/firestore';
-import { db } from '@/services/firebase/config';
+import { createClient } from '@/lib/supabase/client';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Loading } from '@/components/ui/loading';
+import { Info, AlertCircle } from 'lucide-react';
+
+// Criar instância única do cliente Supabase
+const supabaseClient = createClient();
 
 interface PortfolioDividend {
   ticker: string;
@@ -47,6 +40,7 @@ export default function DividendosPage() {
   const [portfolioDividends, setPortfolioDividends] = useState<PortfolioDividend[]>([]);
   const [loadingDividends, setLoadingDividends] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -55,7 +49,9 @@ export default function DividendosPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    if (!user) return;
+    if (!user || hasLoadedRef.current) return;
+
+    hasLoadedRef.current = true;
 
     async function loadPortfolioDividends() {
       try {
@@ -64,10 +60,17 @@ export default function DividendosPage() {
 
         if (!user) return;
 
-        // Buscar investimentos do usuário
-        const investmentsRef = collection(db, 'portfolios', user.uid, 'investments');
-        const snapshot = await getDocs(investmentsRef);
-        const investments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const { data: investments, error: investmentsError } = await supabaseClient
+          .from('investments')
+          .select('*')
+          .eq('user_id', user.uid);
+
+        if (investmentsError) {
+          console.error('Erro ao buscar investimentos:', investmentsError);
+          setError(investmentsError.message);
+          setLoadingDividends(false);
+          return;
+        }
 
         if (investments.length === 0) {
           setPortfolioDividends([]);
@@ -75,24 +78,20 @@ export default function DividendosPage() {
           return;
         }
 
-        // Buscar dividendos de cada ativo
         const dividendsPromises = investments.map(async (inv: any) => {
           try {
             const response = await fetch(`/api/dividends/${inv.ticker}`);
             const data = await response.json();
 
-            // Converter dataCompra para Date
-            const dataCompra = inv.dataCompra?.toDate ? inv.dataCompra.toDate() : new Date(inv.dataCompra);
+            const dataCompra = new Date(inv.data_compra);
 
-            // Filtrar apenas dividendos pagos APÓS a data de compra
             const dividendsFiltrados = (data.dividends || []).filter((div: any) => {
               const dataPagamento = new Date(div.date);
               return dataPagamento >= dataCompra;
             });
 
-            // Buscar preço atual
-            const precoAtual = data.summary?.currentPrice || inv.precoMedio || 0;
-            const valorInvestido = (inv.quantidade || 0) * (inv.precoMedio || 0);
+            const precoAtual = data.summary?.currentPrice || inv.preco_medio || 0;
+            const valorInvestido = (inv.quantidade || 0) * (inv.preco_medio || 0);
 
             return {
               ticker: inv.ticker,
@@ -105,8 +104,8 @@ export default function DividendosPage() {
             };
           } catch (err) {
             console.error(`Erro ao buscar dividendos de ${inv.ticker}:`, err);
-            const dataCompra = inv.dataCompra?.toDate ? inv.dataCompra.toDate() : new Date(inv.dataCompra);
-            const valorInvestido = (inv.quantidade || 0) * (inv.precoMedio || 0);
+            const dataCompra = new Date(inv.data_compra);
+            const valorInvestido = (inv.quantidade || 0) * (inv.preco_medio || 0);
             
             return {
               ticker: inv.ticker,
@@ -114,7 +113,7 @@ export default function DividendosPage() {
               dividends: [],
               yield: 0,
               dataCompra: dataCompra,
-              precoAtual: inv.precoMedio || 0,
+              precoAtual: inv.preco_medio || 0,
               valorInvestido: valorInvestido
             };
           }
@@ -145,24 +144,18 @@ export default function DividendosPage() {
     return d.toLocaleDateString('pt-BR');
   };
 
-  // Calcular projeções de dividendos futuros
   const calcularProjecoes = (): ProjecaoDividendo[] => {
     const projecoes: ProjecaoDividendo[] = [];
     const hoje = new Date();
 
     portfolioDividends.forEach(asset => {
       if (asset.yield > 0 && asset.quantidade > 0) {
-        // Calcular dividend yield anual em reais
         const dividendoAnualPorCota = (asset.precoAtual * asset.yield) / 100;
-        
-        // Estimar frequência de pagamento (geralmente trimestral para ações brasileiras)
-        // Assumir 4 pagamentos por ano
         const valorPorPagamento = dividendoAnualPorCota / 4;
         
-        // Gerar projeções para os próximos 12 meses (4 pagamentos trimestrais)
         for (let i = 1; i <= 4; i++) {
           const dataEstimada = new Date(hoje);
-          dataEstimada.setMonth(hoje.getMonth() + (i * 3)); // A cada 3 meses
+          dataEstimada.setMonth(hoje.getMonth() + (i * 3));
           
           projecoes.push({
             ticker: asset.ticker,
@@ -175,11 +168,9 @@ export default function DividendosPage() {
       }
     });
 
-    // Ordenar por data
     return projecoes.sort((a, b) => a.dataEstimada.getTime() - b.dataEstimada.getTime());
   };
 
-  // Calcular proventos recebidos
   const calculateReceived = () => {
     return portfolioDividends.flatMap(asset =>
       asset.dividends.map((div: any) => ({
@@ -202,195 +193,161 @@ export default function DividendosPage() {
     ? portfolioDividends.reduce((sum, asset) => sum + asset.yield, 0) / portfolioDividends.length
     : 0;
   
-  // Dividendos dos últimos 12 meses
   const twelveMonthsAgo = new Date();
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
   const last12MonthsPayments = received.filter(d => d.date >= twelveMonthsAgo);
 
   if (loading || loadingDividends) {
-    return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh' }}>
-        <CircularProgress />
-      </Box>
-    );
+    return <Loading size="lg" />;
   }
 
   return (
     <MainLayout>
-      <Box sx={{ maxWidth: 1400, mx: 'auto' }}>
-        <Box sx={{ mb: 5 }}>
-          <Typography
-            variant="h4"
-            sx={{
-              fontWeight: 700,
-              mb: 1,
-              fontSize: { xs: '1.75rem', md: '2.125rem' }
-            }}
-          >
+      <div className="space-y-6">
+        {/* Header */}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
             Dividendos da Carteira 💰
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
+          </h1>
+          <p className="text-slate-600">
             Acompanhe os proventos recebidos dos seus investimentos
-          </Typography>
-        </Box>
+          </p>
+        </div>
 
         {error && (
-          <Alert severity="error" sx={{ mb: 3 }}>
-            {error}
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
 
         {portfolioDividends.length === 0 ? (
-          <Alert severity="info">
-            Você ainda não possui investimentos na carteira. Adicione investimentos para acompanhar os dividendos.
+          <Alert>
+            <Info className="h-4 w-4" />
+            <AlertDescription>
+              Você ainda não possui investimentos na carteira. Adicione investimentos para acompanhar os dividendos.
+            </AlertDescription>
           </Alert>
         ) : (
           <>
             {/* Cards de Resumo */}
-            <Box sx={{ mb: 4 }}>
-              <DividendsSummary
-                totalReceived={totalReceived}
-                averageYield={totalYield}
-                totalPayments={last12MonthsPayments.length}
-                totalProjetado={totalProjetado}
-                totalInvestido={totalInvestido}
-              />
-            </Box>
+            <DividendsSummary
+              totalReceived={totalReceived}
+              averageYield={totalYield}
+              totalPayments={last12MonthsPayments.length}
+              totalProjetado={totalProjetado}
+              totalInvestido={totalInvestido}
+            />
 
             {/* Tabela de Projeções */}
             {projecoes.length > 0 && (
-              <Card
-                elevation={0}
-                sx={{
-                  border: '1px solid',
-                  borderColor: 'divider',
-                  borderRadius: 3,
-                  mb: 4
-                }}
-              >
-                <CardContent>
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                    <Typography variant="h6" fontWeight={700}>
-                      Próximos Pagamentos Estimados 📅
-                    </Typography>
-                    <Chip 
-                      label="Projeções" 
-                      size="small" 
-                      color="info" 
-                      variant="outlined"
-                    />
-                  </Box>
-
-                  <Alert severity="info" sx={{ mb: 3 }}>
-                    <Typography variant="body2">
+              <Card>
+                <CardHeader>
+                  <div className="flex items-center gap-2">
+                    <CardTitle>Próximos Pagamentos Estimados 📅</CardTitle>
+                    <Badge variant="secondary">Projeções</Badge>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
                       <strong>Como calculamos:</strong> As projeções são baseadas no Dividend Yield histórico de cada ativo. 
                       Valores e datas são estimativas e podem variar conforme as decisões das empresas.
-                    </Typography>
+                    </AlertDescription>
                   </Alert>
 
-                  <TableContainer>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell><strong>Data Estimada</strong></TableCell>
-                          <TableCell><strong>Ativo</strong></TableCell>
-                          <TableCell align="right"><strong>Valor/Cota</strong></TableCell>
-                          <TableCell align="right"><strong>Quantidade</strong></TableCell>
-                          <TableCell align="right"><strong>Total Estimado</strong></TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Data Estimada</TableHead>
+                        <TableHead>Ativo</TableHead>
+                        <TableHead className="text-right">Valor/Cota</TableHead>
+                        <TableHead className="text-right">Quantidade</TableHead>
+                        <TableHead className="text-right">Total Estimado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {projecoes.slice(0, 8).map((proj, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{formatDate(proj.dataEstimada)}</TableCell>
+                          <TableCell>
+                            <Badge variant="secondary">{proj.ticker}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">{formatCurrency(proj.valorPorCota)}</TableCell>
+                          <TableCell className="text-right">{proj.quantidade}</TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-bold text-orange-600">
+                              {formatCurrency(proj.totalEstimado)}
+                            </span>
+                          </TableCell>
                         </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {projecoes.slice(0, 8).map((proj, index) => (
-                          <TableRow key={index} hover>
-                            <TableCell>{formatDate(proj.dataEstimada)}</TableCell>
-                            <TableCell>
-                              <Chip label={proj.ticker} size="small" color="info" variant="outlined" />
-                            </TableCell>
-                            <TableCell align="right">{formatCurrency(proj.valorPorCota)}</TableCell>
-                            <TableCell align="right">{proj.quantidade}</TableCell>
-                            <TableCell align="right">
-                              <Typography fontWeight="bold" color="info.main">
-                                {formatCurrency(proj.totalEstimado)}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                      ))}
+                    </TableBody>
+                  </Table>
 
-                  <Typography variant="caption" color="text.secondary" sx={{ mt: 2, display: 'block' }}>
+                  <p className="text-xs text-slate-500">
                     💡 Dica: Esses valores são estimativas baseadas em histórico. 
                     Os dividendos reais podem ser maiores ou menores.
-                  </Typography>
+                  </p>
                 </CardContent>
               </Card>
             )}
 
             {/* Tabela de Histórico */}
-            <Card
-              elevation={0}
-              sx={{
-                border: '1px solid',
-                borderColor: 'divider',
-                borderRadius: 3
-              }}
-            >
+            <Card>
+              <CardHeader>
+                <CardTitle>Histórico de Proventos Recebidos 💰</CardTitle>
+              </CardHeader>
               <CardContent>
-                <Typography variant="h6" gutterBottom fontWeight={700}>
-                  Histórico de Proventos Recebidos 💰
-                </Typography>
-
                 {received.length === 0 ? (
-                  <Alert severity="info" sx={{ mt: 2 }}>
-                    <Typography variant="body1" gutterBottom fontWeight={600}>
-                      Nenhum dividendo recebido ainda
-                    </Typography>
-                    <Typography variant="body2">
-                      Os dividendos aparecem aqui apenas após a data de pagamento e quando você já possuía o ativo na data COM.
-                      Acompanhe as projeções acima para saber quando receberá! 📊
-                    </Typography>
+                  <Alert>
+                    <Info className="h-4 w-4" />
+                    <AlertDescription className="space-y-2">
+                      <p className="font-semibold">Nenhum dividendo recebido ainda</p>
+                      <p>
+                        Os dividendos aparecem aqui apenas após a data de pagamento e quando você já possuía o ativo na data COM.
+                        Acompanhe as projeções acima para saber quando receberá! 📊
+                      </p>
+                    </AlertDescription>
                   </Alert>
                 ) : (
-                  <TableContainer sx={{ mt: 2 }}>
-                    <Table>
-                      <TableHead>
-                        <TableRow>
-                          <TableCell><strong>Data</strong></TableCell>
-                          <TableCell><strong>Ativo</strong></TableCell>
-                          <TableCell align="right"><strong>Valor Unitário</strong></TableCell>
-                          <TableCell align="right"><strong>Quantidade</strong></TableCell>
-                          <TableCell align="right"><strong>Total Recebido</strong></TableCell>
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Data</TableHead>
+                        <TableHead>Ativo</TableHead>
+                        <TableHead className="text-right">Valor Unitário</TableHead>
+                        <TableHead className="text-right">Quantidade</TableHead>
+                        <TableHead className="text-right">Total Recebido</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {received.slice(0, 100).map((div, index) => (
+                        <TableRow key={index}>
+                          <TableCell>{formatDate(div.date)}</TableCell>
+                          <TableCell>
+                            <Badge>{div.ticker}</Badge>
+                          </TableCell>
+                          <TableCell className="text-right">{formatCurrency(div.value)}</TableCell>
+                          <TableCell className="text-right">
+                            {portfolioDividends.find(a => a.ticker === div.ticker)?.quantidade || 0}
+                          </TableCell>
+                          <TableCell className="text-right">
+                            <span className="font-bold text-green-600">
+                              {formatCurrency(div.received)}
+                            </span>
+                          </TableCell>
                         </TableRow>
-                      </TableHead>
-                      <TableBody>
-                        {received.slice(0, 100).map((div, index) => (
-                          <TableRow key={index} hover>
-                            <TableCell>{formatDate(div.date)}</TableCell>
-                            <TableCell>
-                              <Chip label={div.ticker} size="small" color="primary" variant="outlined" />
-                            </TableCell>
-                            <TableCell align="right">{formatCurrency(div.value)}</TableCell>
-                            <TableCell align="right">
-                              {portfolioDividends.find(a => a.ticker === div.ticker)?.quantidade || 0}
-                            </TableCell>
-                            <TableCell align="right">
-                              <Typography fontWeight="bold" color="success.main">
-                                {formatCurrency(div.received)}
-                              </Typography>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                  </TableContainer>
+                      ))}
+                    </TableBody>
+                  </Table>
                 )}
               </CardContent>
             </Card>
           </>
         )}
-      </Box>
+      </div>
     </MainLayout>
   );
 }
-
