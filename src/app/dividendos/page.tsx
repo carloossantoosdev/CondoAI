@@ -197,7 +197,7 @@ export default function DividendosPage() {
   twelveMonthsAgo.setMonth(twelveMonthsAgo.getMonth() - 12);
   const last12MonthsPayments = received.filter(d => d.date >= twelveMonthsAgo);
 
-  if (loading || loadingDividends) {
+  if (loading || !user) {
     return <Loading size="lg" />;
   }
 
@@ -221,7 +221,9 @@ export default function DividendosPage() {
           </Alert>
         )}
 
-        {portfolioDividends.length === 0 ? (
+        {loadingDividends ? (
+          <Loading size="lg" />
+        ) : portfolioDividends.length === 0 ? (
           <Alert>
             <Info className="h-4 w-4" />
             <AlertDescription>

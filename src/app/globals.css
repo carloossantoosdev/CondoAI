@@ -10,17 +10,17 @@
     --brand-green: #10b981;
     
     /* Variáveis HSL para Tailwind */
-    --background: 0 0% 98%;
+    --background: 210 20% 95%; /* Tom de gelo azulado suave */
     --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
+    --card: 210 20% 98%; /* Cards um pouco mais claros */
     --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
+    --popover: 210 20% 98%;
     --popover-foreground: 0 0% 3.9%;
     --primary: 16 100% 59%; /* #ff6b2d em HSL */
     --primary-foreground: 0 0% 100%;
     --secondary: 0 72% 41%; /* #b91c1c em HSL */
     --secondary-foreground: 0 0% 100%;
-    --muted: 0 0% 96.1%;
+    --muted: 210 15% 92%; /* Tom de gelo mais suave para áreas muted */
     --muted-foreground: 0 0% 45.1%;
     --accent: 38 92% 50%; /* #f59e0b amarelo em HSL */
     --accent-foreground: 0 0% 9%;
@@ -28,8 +28,8 @@
     --success-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
+    --border: 210 15% 88%; /* Bordas com tom de gelo */
+    --input: 210 15% 88%;
     --ring: 16 100% 59%;
     --radius: 0.75rem;
   }
@@ -99,6 +99,15 @@ body {
   scroll-behavior: smooth;
 }
 
+/* Cursor pointer para todos os botões */
+button,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"] {
+  cursor: pointer;
+}
+
 /* Ajustes para melhor legibilidade */
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
@@ -107,6 +116,42 @@ h1, h2, h3, h4, h5, h6 {
 
 p {
   line-height: 1.7;
+}
+
+/* Ajustes de fonte para mobile */
+@media (max-width: 768px) {
+  body {
+    font-size: 0.875rem; /* 14px - reduz o tamanho base */
+  }
+
+  h1 {
+    font-size: 1.75rem; /* 28px */
+  }
+
+  h2 {
+    font-size: 1.5rem; /* 24px */
+  }
+
+  h3 {
+    font-size: 1.25rem; /* 20px */
+  }
+
+  h4 {
+    font-size: 1.125rem; /* 18px */
+  }
+
+  h5 {
+    font-size: 1rem; /* 16px */
+  }
+
+  h6 {
+    font-size: 0.875rem; /* 14px */
+  }
+
+  p {
+    font-size: 0.875rem; /* 14px */
+    line-height: 1.6;
+  }
 }
 
 /* Gradientes Personalizados - Baseados no novo design */

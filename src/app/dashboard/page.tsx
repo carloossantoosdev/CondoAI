@@ -50,6 +50,11 @@ export default function DashboardPage() {
       hasLoadedRef.current = true;
       loadInvestments();
     }
+    
+    // Cleanup: resetar para permitir reload quando voltar à página
+    return () => {
+      hasLoadedRef.current = false;
+    };
   }, [user]);
 
   const loadInvestments = async () => {
@@ -65,6 +70,14 @@ export default function DashboardPage() {
 
       if (error) {
         console.error('Erro ao buscar investimentos:', error);
+        setInvestments([]);
+        setSummary({
+          valorTotal: 0,
+          totalInvestido: 0,
+          lucroOuPrejuizo: 0,
+          percentualRetorno: 0,
+          numeroInvestimentos: 0,
+        });
         return;
       }
 
@@ -88,10 +101,15 @@ export default function DashboardPage() {
         investmentsList.push(investment);
         totalInvestido += investment.valorTotal;
 
-        const quote = await getAssetQuote(investment.ticker, investment.type);
-        if (quote) {
-          valorTotal += quote.preco * investment.quantidade;
-        } else {
+        try {
+          const quote = await getAssetQuote(investment.ticker, investment.type);
+          if (quote) {
+            valorTotal += quote.preco * investment.quantidade;
+          } else {
+            valorTotal += investment.valorTotal;
+          }
+        } catch (quoteError) {
+          console.error(`Erro ao buscar cotação de ${investment.ticker}:`, quoteError);
           valorTotal += investment.valorTotal;
         }
       }
@@ -110,6 +128,14 @@ export default function DashboardPage() {
       setInvestments(investmentsList);
     } catch (error) {
       console.error('Erro ao carregar investimentos:', error);
+      setInvestments([]);
+      setSummary({
+        valorTotal: 0,
+        totalInvestido: 0,
+        lucroOuPrejuizo: 0,
+        percentualRetorno: 0,
+        numeroInvestimentos: 0,
+      });
     } finally {
       setLoadingData(false);
     }
