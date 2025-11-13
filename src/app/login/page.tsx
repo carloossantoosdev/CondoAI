@@ -94,13 +94,13 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
-      <Card className="w-full max-w-md shadow-2xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 to-orange-50 p-4">
+      <Card className="w-full max-w-md shadow-2xl border-[#ff6b2d]/10">
         <CardHeader className="space-y-3 text-center pb-6">
           <div className="flex justify-center mb-2">
             <div className="text-6xl">💰</div>
           </div>
-          <CardTitle className="text-3xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+          <CardTitle className="text-3xl font-bold !bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] bg-clip-text text-transparent">
             Finanças Pro
           </CardTitle>
           <CardDescription className="text-base">
@@ -174,7 +174,7 @@ export default function LoginPage() {
             <Button
               type="submit"
               size="lg"
-              className="w-full gap-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+              className="w-full gap-2 !bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] hover:opacity-90 text-white font-semibold shadow-lg"
               disabled={isSubmitting}
             >
               {isSubmitting ? (
@@ -198,7 +198,7 @@ export default function LoginPage() {
                 setIsSignUp(!isSignUp);
                 setError('');
               }}
-              className="text-sm text-slate-600 hover:text-orange-500 font-medium transition-colors"
+              className="text-sm text-slate-600 hover:text-[#ff6b2d] font-medium transition-colors"
               disabled={isSubmitting}
             >
               {isSignUp ? 'Já tem conta? Fazer login' : 'Não tem conta? Criar agora'}

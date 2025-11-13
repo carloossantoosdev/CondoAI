@@ -27,7 +27,7 @@ export function DividendsSummary({
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {/* Total Investido */}
-      <Card className="bg-gradient-to-br from-orange-500 to-amber-500 text-white border-0">
+      <Card className="!bg-gradient-to-br !from-[#ff6b2d] !to-[#b91c1c] text-white border-0 hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex justify-between items-start">
             <div>
@@ -41,31 +41,31 @@ export function DividendsSummary({
       </Card>
 
       {/* Projeção 12 Meses */}
-      <Card>
+      <Card className="hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-slate-600 mb-2">Projeção 12 Meses</p>
-              <p className="text-3xl font-bold text-green-600">{formatCurrency(totalProjetado)}</p>
+              <p className="text-3xl font-bold text-[#10b981]">{formatCurrency(totalProjetado)}</p>
               <Badge variant="success" className="mt-2 text-xs">
                 Estimativa
               </Badge>
             </div>
-            <DollarSign className="w-10 h-10 text-green-600 opacity-50" />
+            <DollarSign className="w-10 h-10 text-[#10b981] opacity-50" />
           </div>
         </CardContent>
       </Card>
 
       {/* Dividend Yield Médio */}
-      <Card>
+      <Card className="hover:shadow-lg transition-shadow">
         <CardContent className="p-6">
           <div className="flex justify-between items-start">
             <div>
               <p className="text-sm text-slate-600 mb-2">Dividend Yield Médio</p>
-              <p className="text-3xl font-bold text-orange-500">{averageYield.toFixed(2)}%</p>
+              <p className="text-3xl font-bold text-[#f59e0b]">{averageYield.toFixed(2)}%</p>
               <p className="text-xs text-slate-500 mt-2">Retorno anual estimado</p>
             </div>
-            <Target className="w-10 h-10 text-orange-500 opacity-50" />
+            <Target className="w-10 h-10 text-[#f59e0b] opacity-50" />
           </div>
         </CardContent>
       </Card>

@@ -28,7 +28,7 @@ export default function NoticiasPage() {
         {/* Header */}
         <div>
           <h1 className="text-3xl font-bold text-slate-900 mb-2 flex items-center gap-3">
-            <Newspaper className="w-8 h-8 text-orange-500" />
+            <Newspaper className="w-8 h-8 text-brand-orange" />
             Notícias do Mercado
           </h1>
           <p className="text-slate-600">

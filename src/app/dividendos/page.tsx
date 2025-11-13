@@ -277,7 +277,7 @@ export default function DividendosPage() {
                           <TableCell className="text-right">{formatCurrency(proj.valorPorCota)}</TableCell>
                           <TableCell className="text-right">{proj.quantidade}</TableCell>
                           <TableCell className="text-right">
-                            <span className="font-bold text-orange-600">
+                            <span className="font-bold text-brand-orange">
                               {formatCurrency(proj.totalEstimado)}
                             </span>
                           </TableCell>

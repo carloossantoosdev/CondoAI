@@ -156,9 +156,9 @@ export default function PlansPage() {
               
               <div>
                 <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
-                  <Sparkles className="w-6 h-6 text-orange-500" />
+                  <Sparkles className="w-6 h-6 text-brand-orange" />
                   Você é PRO!
-                  <Sparkles className="w-6 h-6 text-orange-500" />
+                  <Sparkles className="w-6 h-6 text-brand-orange" />
                 </h2>
                 <p className="text-lg text-slate-700 mb-4">
                   Sua assinatura está <strong className="text-green-600">ativa</strong> e você tem acesso a todos os recursos premium.
@@ -186,7 +186,7 @@ export default function PlansPage() {
               <Button
                 size="lg"
                 onClick={() => router.push('/dashboard')}
-                className="w-full max-w-md mx-auto bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+                className="w-full max-w-md mx-auto bg-gradient-to-r from-brand-orange to-brand-red hover:from-brand-orange/90 hover:to-brand-red/90"
               >
                 Ir para Dashboard
               </Button>
@@ -249,16 +249,16 @@ export default function PlansPage() {
           </Card>
 
           {/* Plano PRO */}
-          <Card className="flex flex-col border-2 border-orange-500 relative bg-gradient-to-br from-orange-50/50 to-amber-50/50">
+          <Card className="flex flex-col border-2 border-brand-orange relative bg-gradient-to-br from-orange-50/50 to-red-50/30">
             <div className="absolute -top-3 right-6">
-              <Badge className="bg-orange-500 hover:bg-orange-600">
+              <Badge className="bg-brand-orange hover:bg-brand-red">
                 RECOMENDADO
               </Badge>
             </div>
             <CardHeader className="pb-8">
               <div className="flex items-center gap-2">
                 <CardTitle className="text-2xl">PRO</CardTitle>
-                <Sparkles className="w-6 h-6 text-orange-500" />
+                <Sparkles className="w-6 h-6 text-brand-orange" />
               </div>
               <div className="mt-4">
                 <span className="text-4xl font-bold">R$ 29,90</span>
@@ -282,7 +282,7 @@ export default function PlansPage() {
 
               <Button
                 size="lg"
-                className="w-full bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600"
+                className="w-full bg-gradient-to-r from-brand-orange to-brand-red hover:from-brand-orange/90 hover:to-brand-red/90"
                 disabled={isPaidUser || checkoutLoading}
                 onClick={handleSubscribe}
               >

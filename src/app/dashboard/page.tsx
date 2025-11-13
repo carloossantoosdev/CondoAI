@@ -20,7 +20,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loading } from '@/components/ui/loading';
 import { cn } from '@/lib/utils';
 
-const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444'];
+const COLORS = ['#ff6b2d', '#10b981', '#f59e0b', '#b91c1c'];
 
 // Criar instância única do cliente Supabase
 const supabaseClient = createClient();
@@ -166,7 +166,7 @@ export default function DashboardPage() {
             {/* Cards de Resumo */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Valor Total */}
-              <Card className="bg-gradient-to-br from-orange-500 to-amber-500 text-white border-0 hover:shadow-lg transition-shadow">
+              <Card className="!bg-gradient-to-br !from-[#ff6b2d] !to-[#b91c1c] text-white border-0 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -181,7 +181,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Total Investido */}
-              <Card className="bg-gradient-to-br from-pink-500 to-rose-600 text-white border-0 hover:shadow-lg transition-shadow">
+              <Card className="!bg-gradient-to-br !from-[#b91c1c] !to-red-800 text-white border-0 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -200,8 +200,8 @@ export default function DashboardPage() {
                 className={cn(
                   "text-white border-0 hover:shadow-lg transition-shadow",
                   summary.lucroOuPrejuizo >= 0
-                    ? "bg-gradient-to-br from-cyan-500 to-blue-600"
-                    : "bg-gradient-to-br from-orange-400 to-orange-600"
+                    ? "!bg-gradient-to-br !from-[#10b981] !to-green-700"
+                    : "!bg-gradient-to-br !from-orange-400 !to-red-600"
                 )}
               >
                 <CardContent className="p-6">
@@ -225,7 +225,7 @@ export default function DashboardPage() {
               </Card>
 
               {/* Número de Investimentos */}
-              <Card className="bg-gradient-to-br from-amber-500 to-orange-600 text-white border-0 hover:shadow-lg transition-shadow">
+              <Card className="!bg-gradient-to-br !from-[#f59e0b] !to-orange-500 text-white border-0 hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
                   <div className="flex justify-between items-start mb-4">
                     <div>
@@ -308,8 +308,8 @@ export default function DashboardPage() {
             ) : (
               <Card className="border-2 border-dashed">
                 <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-4">
-                    <Target className="w-10 h-10 text-orange-600" />
+                  <div className="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-4 border-2 border-brand-orange">
+                    <Target className="w-10 h-10 text-brand-orange" />
                   </div>
                   <h3 className="text-xl font-bold text-slate-900 mb-2">
                     Você ainda não tem investimentos

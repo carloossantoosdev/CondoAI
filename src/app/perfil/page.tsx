@@ -248,7 +248,7 @@ export default function PerfilPage() {
               {/* Barra de Progresso */}
               <div className="w-full bg-slate-200 rounded-full h-2">
                 <div
-                  className="bg-gradient-to-r from-orange-500 to-amber-500 h-2 rounded-full transition-all duration-300"
+                  className="bg-gradient-to-r from-brand-orange to-brand-red h-2 rounded-full transition-all duration-300"
                   style={{ width: `${((currentQuestion + 1) / questions.length) * 100}%` }}
                 />
               </div>
@@ -264,7 +264,7 @@ export default function PerfilPage() {
                       key={index}
                       variant="outline"
                       onClick={() => handleAnswer(option.score)}
-                      className="w-full justify-start text-left h-auto py-4 px-6 hover:border-orange-500 hover:bg-orange-50"
+                      className="w-full justify-start text-left h-auto py-4 px-6 hover:border-brand-orange hover:bg-orange-50"
                     >
                       <span className="flex-1">{option.text}</span>
                     </Button>
@@ -304,8 +304,8 @@ export default function PerfilPage() {
                   <ProfileIcon className={cn(
                     "w-8 h-8",
                     result === 'conservador' ? 'text-blue-600' :
-                    result === 'moderado' ? 'text-orange-600' :
-                    'text-red-600'
+                    result === 'moderado' ? 'text-brand-orange' :
+                    'text-brand-red'
                   )} />
                 </div>
                 <div>
@@ -377,15 +377,15 @@ export default function PerfilPage() {
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <TrendingUp className="w-4 h-4 text-orange-600" />
-                    <strong className="text-orange-600">Moderado</strong>
+                    <TrendingUp className="w-4 h-4 text-brand-orange" />
+                    <strong className="text-brand-orange">Moderado</strong>
                   </div>
                   <p className="text-slate-600">Equilíbrio entre risco e retorno</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Zap className="w-4 h-4 text-red-600" />
-                    <strong className="text-red-600">Arrojado</strong>
+                    <Zap className="w-4 h-4 text-brand-red" />
+                    <strong className="text-brand-red">Arrojado</strong>
                   </div>
                   <p className="text-slate-600">Busca altos retornos com mais risco</p>
                 </div>

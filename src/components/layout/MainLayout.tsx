@@ -61,7 +61,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto border-r border-slate-200 bg-white px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center border-b border-slate-100">
-            <h1 className="text-xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+            <h1 className="text-xl font-bold !bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] bg-clip-text text-transparent">
               💰 Finanças Pro
             </h1>
           </div>
@@ -79,12 +79,14 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                       className={cn(
                         'group flex w-full gap-x-3 rounded-lg p-3 text-sm font-semibold transition-all',
                         isActive
-                          ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md'
-                          : 'text-slate-700 hover:bg-slate-100 hover:text-orange-600',
+                          ? '!bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] text-white shadow-md'
+                          : 'text-slate-700 hover:bg-orange-50 hover:text-[#ff6b2d]',
                         isDisabled && 'opacity-50 cursor-not-allowed'
                       )}
                     >
-                      {item.icon}
+                      <span className={cn(isActive && 'text-white')}>
+                        {item.icon}
+                      </span>
                       <span className="flex-1 text-left">{item.text}</span>
                       {item.requiresPaid && user?.subscriptionStatus !== 'paid' && (
                         <Badge variant="warning" className="text-xs">PRO</Badge>
@@ -99,7 +101,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                 <div className="flex items-center gap-x-3 p-3 rounded-lg bg-slate-50">
                   <Avatar className="h-10 w-10">
                     <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'Usuário'} />
-                    <AvatarFallback className="bg-gradient-to-br from-blue-600 to-violet-600 text-white font-semibold">
+                    <AvatarFallback className="!bg-gradient-to-br !from-[#ff6b2d] !to-[#b91c1c] text-white font-semibold">
                       {user?.displayName?.charAt(0) || 'U'}
                     </AvatarFallback>
                   </Avatar>
@@ -118,7 +120,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                     variant="ghost"
                     size="icon"
                     onClick={handleLogout}
-                    className="h-8 w-8 text-slate-500 hover:text-orange-600"
+                    className="h-8 w-8 text-slate-500 hover:text-[#ff6b2d]"
                   >
                     <LogOut className="h-4 w-4" />
                   </Button>
@@ -139,7 +141,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
           <aside className="fixed inset-y-0 z-50 flex w-64 flex-col lg:hidden">
             <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-white px-6 pb-4">
               <div className="flex h-16 shrink-0 items-center justify-between border-b border-slate-100">
-                <h1 className="text-xl font-bold bg-gradient-to-r from-red-600 to-orange-600 bg-clip-text text-transparent">
+                <h1 className="text-xl font-bold !bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] bg-clip-text text-transparent">
                   💰 Finanças Pro
                 </h1>
                 <Button
@@ -165,12 +167,14 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                           className={cn(
                             'group flex w-full gap-x-3 rounded-lg p-3 text-sm font-semibold transition-all',
                             isActive
-                              ? 'bg-gradient-to-r from-red-600 to-orange-600 text-white shadow-md'
-                              : 'text-slate-700 hover:bg-slate-100 hover:text-blue-600',
+                              ? '!bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] text-white shadow-md'
+                              : 'text-slate-700 hover:bg-orange-50 hover:text-[#ff6b2d]',
                             isDisabled && 'opacity-50 cursor-not-allowed'
                           )}
                         >
-                          {item.icon}
+                          <span className={cn(isActive && 'text-white')}>
+                            {item.icon}
+                          </span>
                           <span className="flex-1 text-left">{item.text}</span>
                           {item.requiresPaid && user?.subscriptionStatus !== 'paid' && (
                             <Badge variant="warning" className="text-xs">PRO</Badge>
@@ -184,7 +188,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                     <div className="flex items-center gap-x-3 p-3 rounded-lg bg-slate-50">
                       <Avatar className="h-10 w-10">
                         <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'Usuário'} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-600 to-violet-600 text-white font-semibold">
+                        <AvatarFallback className="!bg-gradient-to-br !from-[#ff6b2d] !to-[#b91c1c] text-white font-semibold">
                           {user?.displayName?.charAt(0) || 'U'}
                         </AvatarFallback>
                       </Avatar>
@@ -203,7 +207,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
                         variant="ghost"
                         size="icon"
                         onClick={handleLogout}
-                        className="h-8 w-8 text-slate-500 hover:text-orange-600"
+                        className="h-8 w-8 text-slate-500 hover:text-[#ff6b2d]"
                       >
                         <LogOut className="h-4 w-4" />
                       </Button>

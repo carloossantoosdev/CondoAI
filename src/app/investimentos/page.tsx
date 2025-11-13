@@ -270,7 +270,7 @@ export default function InvestmentPage() {
               {paginatedAssets.map((asset) => (
                 <Card 
                   key={`${asset.tipo}-${asset.ticker}`}
-                  className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 hover:border-red-300"
+                  className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 hover:border-brand-orange/50"
                 >
                   <CardContent className="p-5">
                     {/* Header */}
@@ -279,7 +279,7 @@ export default function InvestmentPage() {
                         {asset.logo ? (
                           <AvatarImage src={asset.logo} alt={asset.ticker} />
                         ) : (
-                          <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold text-sm">
+                          <AvatarFallback className="bg-gradient-to-br from-brand-orange to-brand-red text-white font-bold text-sm">
                             {asset.ticker.substring(0, 2)}
                           </AvatarFallback>
                         )}
@@ -395,17 +395,17 @@ export default function InvestmentPage() {
           <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader className="space-y-3">
               <div className="flex items-center gap-3">
-                <Avatar className="h-14 w-14 border-2 border-orange-200">
+                <Avatar className="h-14 w-14 border-2 border-brand-orange/30">
                   {selectedAsset?.logo ? (
                     <AvatarImage src={selectedAsset.logo} alt={selectedAsset.ticker} />
                   ) : (
-                    <AvatarFallback className="bg-gradient-to-br from-orange-500 to-amber-500 text-white font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-brand-orange to-brand-red text-white font-bold">
                       {selectedAsset?.ticker.substring(0, 2)}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div>
-                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-orange-500 to-amber-500 bg-clip-text text-transparent">
+                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-brand-orange to-brand-red bg-clip-text text-transparent">
                     {selectedAsset?.ticker}
                   </DialogTitle>
                   <DialogDescription className="text-base text-slate-600">
@@ -418,7 +418,7 @@ export default function InvestmentPage() {
             {selectedAsset && (
               <div className="space-y-5 py-4">
                 {/* Preço Atual - Destaque */}
-                <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-orange-200 shadow-sm">
+                <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-brand-orange/30 shadow-sm">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between">
                       <div>
@@ -514,7 +514,7 @@ export default function InvestmentPage() {
                       min="1"
                       value={quantidade}
                       onChange={(e) => setQuantidade(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="text-xl font-semibold h-14 pl-4 pr-12 border-2 border-slate-200 focus:border-orange-400"
+                      className="text-xl font-semibold h-14 pl-4 pr-12 border-2 border-slate-200 focus:border-brand-orange"
                       placeholder="1"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
@@ -527,7 +527,7 @@ export default function InvestmentPage() {
                 </div>
 
                 {/* Resumo do Investimento */}
-                <Card className="bg-gradient-to-br from-orange-500 via-orange-600 to-amber-600 border-0 text-white shadow-lg">
+                <Card className="bg-gradient-to-br from-brand-orange via-red-600 to-brand-red border-0 text-white shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-3">
                       <span className="text-sm font-medium opacity-90 flex items-center gap-2">
@@ -561,7 +561,7 @@ export default function InvestmentPage() {
               <Button
                 onClick={handleInvest}
                 disabled={investing}
-                className="flex-1 gap-2 h-12 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-600 hover:to-amber-600 text-white font-semibold shadow-lg"
+                className="flex-1 gap-2 h-12 bg-gradient-to-r from-brand-orange to-brand-red hover:from-brand-orange/90 hover:to-brand-red/90 text-white font-semibold shadow-lg"
               >
                 {investing ? (
                   <>
