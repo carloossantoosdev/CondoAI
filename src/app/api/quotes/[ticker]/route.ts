@@ -50,7 +50,12 @@ export async function GET(
 
     // Fallback: brapi.dev
     try {
-      const response = await fetch(`https://brapi.dev/api/quote/${ticker}`);
+      const apiKey = process.env.BRAPI_API_KEY || process.env.NEXT_PUBLIC_BRAPI_API_KEY || '';
+      const brapiUrl = apiKey 
+        ? `https://brapi.dev/api/quote/${ticker}?token=${apiKey}`
+        : `https://brapi.dev/api/quote/${ticker}`;
+      
+      const response = await fetch(brapiUrl);
       
       if (response.ok) {
         const data = await response.json();

@@ -130,6 +130,11 @@ export default function DividendosPage() {
     }
 
     loadPortfolioDividends();
+    
+    // Cleanup: resetar para permitir reload quando voltar à página
+    return () => {
+      hasLoadedRef.current = false;
+    };
   }, [user]);
 
   const formatCurrency = (value: number) => {

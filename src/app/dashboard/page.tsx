@@ -6,7 +6,6 @@ import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { createClient } from '@/lib/supabase/client';
 import { Investment, PortfolioSummary } from '@/types';
-import { getAssetQuote } from '@/services/api/investmentService';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
 import {
   TrendingUp,
@@ -102,9 +101,11 @@ export default function DashboardPage() {
         totalInvestido += investment.valorTotal;
 
         try {
-          const quote = await getAssetQuote(investment.ticker, investment.type);
-          if (quote) {
-            valorTotal += quote.preco * investment.quantidade;
+          // Usar API route para buscar cotação (server-side com API key)
+          const response = await fetch(`/api/quotes/${investment.ticker}`);
+          if (response.ok) {
+            const quoteData = await response.json();
+            valorTotal += quoteData.price * investment.quantidade;
           } else {
             valorTotal += investment.valorTotal;
           }
