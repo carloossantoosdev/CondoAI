@@ -184,7 +184,7 @@ export default function InvestmentPage() {
   };
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   // Paginação
@@ -263,7 +263,7 @@ export default function InvestmentPage() {
 
         {/* Assets Grid */}
         {loadingAssets ? (
-          <Loading size="lg" />
+          <Loading size="lg" fullscreen />
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

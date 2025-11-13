@@ -37,9 +37,7 @@ export default function MarketNews() {
   return (
     <>
         {loading ? (
-          <div className="flex justify-center py-8">
-            <Loading size="md" />
-          </div>
+          <Loading size="lg" fullscreen />
         ) : news.length > 0 ? (
           <div className="space-y-4">
             {news.map((item: NewsItem, index: number) => (

@@ -117,7 +117,7 @@ export default function DicasPage() {
   }, [user, loading, router]);
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   return (

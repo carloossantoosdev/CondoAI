@@ -19,7 +19,7 @@ export default function NoticiasPage() {
   }, [user, loading, router]);
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   return (

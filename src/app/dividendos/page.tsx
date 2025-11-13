@@ -203,7 +203,7 @@ export default function DividendosPage() {
   const last12MonthsPayments = received.filter(d => d.date >= twelveMonthsAgo);
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   return (
@@ -227,7 +227,7 @@ export default function DividendosPage() {
         )}
 
         {loadingDividends ? (
-          <Loading size="lg" />
+          <Loading size="lg" fullscreen />
         ) : portfolioDividends.length === 0 ? (
           <Alert>
             <Info className="h-4 w-4" />

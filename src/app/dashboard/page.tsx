@@ -170,7 +170,7 @@ export default function DashboardPage() {
   };
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   return (
@@ -187,7 +187,7 @@ export default function DashboardPage() {
         </div>
 
         {loadingData ? (
-          <Loading size="lg" />
+          <Loading size="lg" fullscreen />
         ) : (
           <>
             {/* Cards de Resumo */}

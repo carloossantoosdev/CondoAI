@@ -123,7 +123,7 @@ export default function PlansPage() {
   ];
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   const isPaidUser = user.subscriptionStatus === 'paid';

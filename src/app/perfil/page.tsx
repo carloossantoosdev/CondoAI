@@ -202,7 +202,7 @@ export default function PerfilPage() {
   };
 
   if (loading) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   if (!user) {

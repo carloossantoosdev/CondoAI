@@ -145,7 +145,7 @@ export default function ContactPage() {
   };
 
   if (loading || !user) {
-    return <Loading size="lg" />;
+    return <Loading size="lg" fullscreen />;
   }
 
   // Se não for usuário PRO, mostrar mensagem
