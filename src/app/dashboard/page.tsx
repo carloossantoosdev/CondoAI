@@ -18,6 +18,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loading } from '@/components/ui/loading';
 import { cn } from '@/lib/utils';
+import { getQuote } from '@/services/mockData/quotesService';
 
 const COLORS = ['#ff6b2d', '#10b981', '#f59e0b', '#b91c1c'];
 
@@ -100,10 +101,9 @@ export default function DashboardPage() {
         totalInvestido += investment.valorTotal;
 
         try {
-          // Usar API route para buscar cotação (server-side com API key)
-          const response = await fetch(`/api/quotes/${investment.ticker}`);
-          if (response.ok) {
-            const quoteData = await response.json();
+          // Usar serviço de cotações mockadas
+          const quoteData = await getQuote(investment.ticker);
+          if (quoteData) {
             valorTotal += quoteData.price * investment.quantidade;
           } else {
             valorTotal += investment.valorTotal;
