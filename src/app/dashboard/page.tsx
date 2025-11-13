@@ -41,23 +41,21 @@ export default function DashboardPage() {
   useEffect(() => {
     if (!loading && !user) {
       router.push('/login');
+      return;
     }
-  }, [user, loading, router]);
 
-  useEffect(() => {
+    // Carregar investimentos apenas uma vez quando o usuário estiver disponível
     if (user && !hasLoadedRef.current) {
       hasLoadedRef.current = true;
       loadInvestments();
     }
-    
-    // Cleanup: resetar para permitir reload quando voltar à página
-    return () => {
-      hasLoadedRef.current = false;
-    };
-  }, [user]);
+  }, [user, loading, router]);
 
   const loadInvestments = async () => {
-    if (!user) return;
+    if (!user) {
+      setLoadingData(false);
+      return;
+    }
 
     try {
       setLoadingData(true);
@@ -77,6 +75,7 @@ export default function DashboardPage() {
           percentualRetorno: 0,
           numeroInvestimentos: 0,
         });
+        setLoadingData(false);
         return;
       }
 

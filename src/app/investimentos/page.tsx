@@ -4,18 +4,25 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
-import { Asset, InvestmentType } from '@/types';
+import { Asset, InvestmentType, RiskProfile } from '@/types';
 import { getAllAssets, getAssetsByType, PaginatedAssets } from '@/services/api/investmentService';
 import { createClient } from '@/lib/supabase/client';
-import { TrendingUp, TrendingDown, Plus, Loader2, CheckCircle2, DollarSign, TrendingUpIcon } from 'lucide-react';
+import { TrendingUp, TrendingDown, Plus, Loader2, CheckCircle2, DollarSign, TrendingUpIcon, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { 
+  getInvestmentTypeName,
+  getInvestmentTypeEmoji,
+  getAvailableInvestmentTypes,
+  getEffectiveProfile,
+  profileInfo,
+} from '@/lib/investmentHelpers';
 import {
   Dialog,
   DialogContent,
@@ -46,7 +53,7 @@ interface AssetWithAnalysis extends Asset {
 export default function InvestmentPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const [currentTab, setCurrentTab] = useState<'todos' | InvestmentType>('todos');
+  const [currentTab, setCurrentTab] = useState<'recomendados' | 'todos' | InvestmentType>('recomendados');
   const [assets, setAssets] = useState<AssetWithAnalysis[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
   const [selectedAsset, setSelectedAsset] = useState<AssetWithAnalysis | null>(null);
@@ -80,9 +87,24 @@ export default function InvestmentPage() {
       setLoadingAssets(true);
       let data: PaginatedAssets;
 
-      if (currentTab === 'todos') {
+      if (currentTab === 'recomendados') {
+        // Carrega apenas ativos compatíveis com o perfil do usuário
+        const availableTypes = getAvailableInvestmentTypes(user?.riskProfile as RiskProfile | null || null, false);
         data = await getAllAssets(pageNumber);
+        
+        // Filtra apenas ativos compatíveis
+        data.assets = data.assets.filter(asset => 
+          availableTypes.includes(asset.tipo)
+        );
+      } else if (currentTab === 'todos') {
+        // Na aba "Todos", também filtra por perfil
+        const availableTypes = getAvailableInvestmentTypes(user?.riskProfile as RiskProfile | null || null, false);
+        data = await getAllAssets(pageNumber);
+        data.assets = data.assets.filter(asset => 
+          availableTypes.includes(asset.tipo)
+        );
       } else {
+        // Tabs específicas já filtram pelo tipo
         data = await getAssetsByType(currentTab, pageNumber);
       }
 
@@ -98,11 +120,12 @@ export default function InvestmentPage() {
   };
 
   const handleTabChange = (newValue: string) => {
-    setCurrentTab(newValue as 'todos' | InvestmentType);
+    setCurrentTab(newValue as 'recomendados' | 'todos' | InvestmentType);
     setPage(1);
   };
 
   const handleOpenModal = async (asset: Asset) => {
+    // Todos os ativos mostrados já são compatíveis, então pode abrir direto
     setSelectedAsset(asset);
     setQuantidade(1);
     setModalOpen(true);
@@ -246,18 +269,139 @@ export default function InvestmentPage() {
           </Alert>
         )}
 
-        {/* Tabs */}
+        {/* Banner de Incentivo - Perfil Não Definido */}
+        {!user?.riskProfile && (
+          <Card className="border-2 border-amber-400 bg-gradient-to-r from-amber-50 to-orange-50 shadow-lg">
+            <CardContent className="p-6">
+              <div className="flex flex-col gap-4">
+                {/* Título */}
+                <div>
+                  <h3 className="text-xl font-bold text-amber-900 mb-2">
+                    🎯 Descubra Seu Perfil de Investidor!
+                  </h3>
+                  <p className="text-amber-800 mb-3">
+                    Você está navegando com perfil <strong>Conservador (padrão)</strong>. 
+                    Complete nosso quiz rápido para desbloquear investimentos personalizados para você!
+                  </p>
+                </div>
+                
+                {/* Benefícios */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  <div className="flex items-center gap-2 text-sm text-amber-900">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span>Recomendações IA personalizadas</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-amber-900">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span>Desbloqueie mais categorias</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-amber-900">
+                    <CheckCircle2 className="w-4 h-4 text-green-600" />
+                    <span>Apenas 2 minutos</span>
+                  </div>
+                </div>
+                
+                {/* Botão */}
+                <div>
+                  <Button 
+                    size="lg" 
+                    className="bg-gradient-to-r from-[#ff6b2d] to-[#b91c1c] hover:from-[#ff6b2d]/90 hover:to-[#b91c1c]/90 shadow-md"
+                    onClick={() => router.push('/perfil')}
+                  >
+                    <TrendingUp className="w-5 h-5 mr-2" />
+                    Fazer Quiz Agora (2 min)
+                  </Button>
+                </div>
+                
+                {/* Info Box */}
+                <Alert className="bg-white/50 border-amber-200">
+                  <Info className="h-4 w-4 text-amber-600" />
+                  <AlertDescription className="text-sm text-amber-800">
+                    <strong>Por que isso importa?</strong> Seu perfil nos ajuda a filtrar apenas investimentos adequados 
+                    ao seu nível de conhecimento e tolerância ao risco, protegendo você de decisões inadequadas.
+                  </AlertDescription>
+                </Alert>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+
+        {/* Tabs de Filtro por Perfil */}
         <Card>
           <CardContent className="p-4">
-            <Tabs value={currentTab} onValueChange={handleTabChange}>
-              <TabsList className="grid w-full grid-cols-5">
-                <TabsTrigger value="todos">Todos</TabsTrigger>
-                <TabsTrigger value="acao">Ações</TabsTrigger>
-                <TabsTrigger value="fundo">Fundos</TabsTrigger>
-                <TabsTrigger value="rendaFixa">Renda Fixa</TabsTrigger>
-                <TabsTrigger value="cripto">Cripto</TabsTrigger>
-              </TabsList>
-            </Tabs>
+            <div className="flex flex-col gap-4">
+              {/* Badge do Perfil */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-sm font-semibold">
+                    ⭐ Investimentos Recomendados para seu Perfil
+                  </Label>
+                  <p className="text-xs text-slate-500 mt-1">
+                    Mostrando apenas ativos compatíveis com o seu nível de risco
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {(() => {
+                    const effectiveProfile = getEffectiveProfile(user?.riskProfile as RiskProfile | null);
+                    return (
+                      <Badge variant="secondary" className="text-sm">
+                        {profileInfo[effectiveProfile]?.emoji} {profileInfo[effectiveProfile]?.title}
+                      </Badge>
+                    );
+                  })()}
+                  {!user?.riskProfile && (
+                    <Badge variant="outline" className="text-xs text-amber-700 border-amber-300">
+                      Padrão
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Tabs Dinâmicas baseadas no Perfil Efetivo */}
+              <Tabs value={currentTab} onValueChange={handleTabChange}>
+                <TabsList className={cn(
+                  "grid w-full",
+                  getEffectiveProfile(user?.riskProfile as RiskProfile | null) === 'conservador' ? 'grid-cols-1' :
+                  getEffectiveProfile(user?.riskProfile as RiskProfile | null) === 'moderado' ? 'grid-cols-4' :
+                  getEffectiveProfile(user?.riskProfile as RiskProfile | null) === 'arrojado' ? 'grid-cols-6' :
+                  'grid-cols-1'
+                )}>
+           
+                  {/* Todos - apenas arrojado */}
+                  {getEffectiveProfile(user?.riskProfile as RiskProfile | null) === 'arrojado' && (
+                    <TabsTrigger value="todos">
+                      Todos
+                    </TabsTrigger>
+                  )}
+                  
+                  <TabsTrigger value="rendaFixa">
+                    🏦 Renda Fixa
+                  </TabsTrigger>
+                  
+                  {/* Fundos - apenas moderado e arrojado */}
+                  {getEffectiveProfile(user?.riskProfile as RiskProfile | null) !== 'conservador' && (
+                    <TabsTrigger value="fundo">
+                      📈 Fundos
+                    </TabsTrigger>
+                  )}
+                  
+                  {/* Ações - apenas moderado e arrojado */}
+                  {getEffectiveProfile(user?.riskProfile as RiskProfile | null) !== 'conservador' && (
+                    <TabsTrigger value="acao">
+                      📊 Ações
+                    </TabsTrigger>
+                  )}
+                  
+                  {/* Cripto - apenas arrojado */}
+                  {getEffectiveProfile(user?.riskProfile as RiskProfile | null) === 'arrojado' && (
+                    <TabsTrigger value="cripto">
+                      ₿ Cripto
+                    </TabsTrigger>
+                  )}
+                </TabsList>
+              </Tabs>
+            </div>
           </CardContent>
         </Card>
 
@@ -267,38 +411,45 @@ export default function InvestmentPage() {
         ) : (
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {paginatedAssets.map((asset) => (
-                <Card 
-                  key={`${asset.tipo}-${asset.ticker}`}
-                  className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 hover:border-brand-orange/50"
-                >
-                  <CardContent className="p-5">
-                    {/* Header */}
-                    <div className="flex items-start gap-3 mb-4">
-                      <Avatar className="h-12 w-12 border-2 border-slate-200">
-                        {asset.logo ? (
-                          <AvatarImage src={asset.logo} alt={asset.ticker} />
-                        ) : (
-                          <AvatarFallback className="bg-gradient-to-br from-brand-orange to-brand-red text-white font-bold text-sm">
-                            {asset.ticker.substring(0, 2)}
-                          </AvatarFallback>
-                        )}
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-bold text-slate-900 truncate">
-                          {asset.ticker}
-                        </h3>
-                        <Badge 
-                          variant="secondary" 
-                          className="mt-1 text-xs"
-                        >
-                          {asset.tipo === 'acao' ? 'Ação' :
-                           asset.tipo === 'fundo' ? 'Fundo' :
-                           asset.tipo === 'rendaFixa' ? 'Renda Fixa' :
-                           'Cripto'}
-                        </Badge>
+              {paginatedAssets.map((asset) => {
+                // Todos os ativos aqui já são compatíveis (filtrados no loadAssets)
+                return (
+                  <Card 
+                    key={`${asset.tipo}-${asset.ticker}`}
+                    className="group hover:shadow-lg transition-all duration-200 hover:-translate-y-1 hover:border-brand-orange/50 relative"
+                  >
+                    {/* Badge de Compatibilidade - sempre verde */}
+                    <Badge 
+                      variant="success"
+                      className="absolute top-2 right-2 z-10 text-xs"
+                    >
+                      ✓ Recomendado
+                    </Badge>
+
+                    <CardContent className="p-5">
+                      {/* Header */}
+                      <div className="flex items-start gap-3 mb-4">
+                        <Avatar className="h-12 w-12 border-2 border-slate-200">
+                          {asset.logo ? (
+                            <AvatarImage src={asset.logo} alt={asset.ticker} />
+                          ) : (
+                            <AvatarFallback className="bg-gradient-to-br from-brand-orange to-brand-red text-white font-bold text-sm">
+                              {asset.ticker.substring(0, 2)}
+                            </AvatarFallback>
+                          )}
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-bold text-slate-900 truncate">
+                            {asset.ticker}
+                          </h3>
+                          <Badge 
+                            variant="secondary" 
+                            className="mt-1 text-xs"
+                          >
+                            {getInvestmentTypeEmoji(asset.tipo)} {getInvestmentTypeName(asset.tipo)}
+                          </Badge>
+                        </div>
                       </div>
-                    </div>
 
                     {/* Nome */}
                     <p className="text-sm text-slate-600 mb-4 line-clamp-2 min-h-[40px]">
@@ -343,7 +494,8 @@ export default function InvestmentPage() {
                     </Button>
                   </CardContent>
                 </Card>
-              ))}
+              );
+              })}
             </div>
 
             {/* Paginação */}

@@ -1,8 +1,7 @@
 import { Asset, InvestmentType } from '@/types';
 import { getBrapiAssets, getBrapiQuote } from './brapiService';
-import { getBinanceAssets, getBinanceQuote } from './binanceService';
-import { getAnbimaFunds, getAnbimaFundQuote } from './anbimaService';
-import { getRendaFixaAssets, getRendaFixaQuote } from './openFinanceService';
+import { getBinanceAssets } from './binanceService';
+import { getTesouroDiretoAssets, getTesouroDiretoQuote } from './tesouroDiretoService';
 
 export interface PaginatedAssets {
   assets: Asset[];
@@ -11,25 +10,25 @@ export interface PaginatedAssets {
   currentPage: number;
 }
 
+/**
+ * Busca todos os ativos de todos os tipos (unificado via Brapi)
+ */
 export const getAllAssets = async (page: number = 1): Promise<PaginatedAssets> => {
   try {
-    // Para "Todos", vamos buscar múltiplas páginas de cada tipo
-    // e combinar os resultados
     const itemsPerPage = 50;
     
-    const [acoesData, cripto, fundos, rendaFixa] = await Promise.all([
+    const [acoesData, cripto, rendaFixa] = await Promise.all([
       getBrapiAssets('all', page, itemsPerPage),
-      getBinanceAssets(),
-      getAnbimaFunds(),
-      getRendaFixaAssets(),
+      getBinanceAssets().catch(() => []), // Binance API - gratuita
+      getTesouroDiretoAssets().catch(() => []), // Dados estáticos
     ]);
 
-    const allAssets = [...acoesData.assets, ...cripto, ...fundos, ...rendaFixa];
+    const allAssets = [...acoesData.assets, ...cripto, ...rendaFixa];
 
     return {
       assets: allAssets,
       totalPages: acoesData.totalPages,
-      totalCount: acoesData.totalCount + cripto.length + fundos.length + rendaFixa.length,
+      totalCount: acoesData.totalCount + cripto.length + rendaFixa.length,
       currentPage: page,
     };
   } catch (error) {
@@ -38,6 +37,9 @@ export const getAllAssets = async (page: number = 1): Promise<PaginatedAssets> =
   }
 };
 
+/**
+ * Busca ativos por tipo (unificado via Brapi)
+ */
 export const getAssetsByType = async (
   type: InvestmentType,
   page: number = 1
@@ -54,31 +56,51 @@ export const getAssetsByType = async (
         };
       }
       case 'fundo': {
-        const fundos = await getAnbimaFunds();
+        const data = await getBrapiAssets('fii', page, 50);
         return {
-          assets: fundos,
-          totalPages: 1,
-          totalCount: fundos.length,
-          currentPage: 1,
+          assets: data.assets,
+          totalPages: data.totalPages,
+          totalCount: data.totalCount,
+          currentPage: page,
         };
       }
       case 'rendaFixa': {
-        const rendaFixa = await getRendaFixaAssets();
-        return {
-          assets: rendaFixa,
-          totalPages: 1,
-          totalCount: rendaFixa.length,
-          currentPage: 1,
-        };
+        try {
+          const rendaFixa = await getTesouroDiretoAssets();
+          return {
+            assets: rendaFixa,
+            totalPages: 1,
+            totalCount: rendaFixa.length,
+            currentPage: 1,
+          };
+        } catch (error) {
+          console.error('Falha ao carregar Tesouro Direto:', error);
+          return {
+            assets: [],
+            totalPages: 1,
+            totalCount: 0,
+            currentPage: 1,
+          };
+        }
       }
       case 'cripto': {
-        const cripto = await getBinanceAssets();
-        return {
-          assets: cripto,
-          totalPages: 1,
-          totalCount: cripto.length,
-          currentPage: 1,
-        };
+        try {
+          const cripto = await getBinanceAssets();
+          return {
+            assets: cripto,
+            totalPages: 1,
+            totalCount: cripto.length,
+            currentPage: 1,
+          };
+        } catch (error) {
+          console.error('Falha ao carregar criptomoedas:', error);
+          return {
+            assets: [],
+            totalPages: 1,
+            totalCount: 0,
+            currentPage: 1,
+          };
+        }
       }
       default:
         return { assets: [], totalPages: 1, totalCount: 0, currentPage: 1 };
@@ -89,20 +111,18 @@ export const getAssetsByType = async (
   }
 };
 
+/**
+ * Busca cotação de um ativo específico (unificado via Brapi)
+ */
 export const getAssetQuote = async (ticker: string, type: InvestmentType): Promise<Asset | null> => {
   try {
-    switch (type) {
-      case 'acao':
-        return await getBrapiQuote(ticker);
-      case 'fundo':
-        return await getAnbimaFundQuote(ticker);
-      case 'rendaFixa':
-        return await getRendaFixaQuote(ticker);
-      case 'cripto':
-        return await getBinanceQuote(ticker);
-      default:
-        return null;
+    // Para renda fixa, buscar do Tesouro Direto
+    if (type === 'rendaFixa') {
+      return await getTesouroDiretoQuote(ticker);
     }
+    
+    // Para todos os outros, usar Brapi
+    return await getBrapiQuote(ticker, type);
   } catch (error) {
     console.error(`Erro ao buscar cotação de ${ticker}:`, error);
     return null;

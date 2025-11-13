@@ -113,7 +113,7 @@ const profileInfo = {
 };
 
 export default function PerfilPage() {
-  const { user, loading } = useAuth();
+  const { user, loading, refreshUser } = useAuth();
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
@@ -160,36 +160,70 @@ export default function PerfilPage() {
     }
 
     // Salvar automaticamente no banco
-    if (user) {
-      try {
-        setSaving(true);
+    if (!user) {
+      console.error('Usuário não está logado');
+      alert('Você precisa estar logado para salvar o perfil.');
+      return;
+    }
 
-        const { error } = await supabaseClient
-          .from('users')
-          .update({ risk_profile: profile })
-          .eq('id', user.uid)
-          .select();
+    setSaving(true);
+    
+    try {
+      // Verifica se o usuário existe
+      const { data: existingUser, error: checkError } = await supabaseClient
+        .from('users')
+        .select('id, risk_profile')
+        .eq('id', user.uid)
+        .single();
 
-
-        if (error) {
-          console.error('Erro no Supabase:', error);
-          throw error;
-        }
-
-        // Só mostra o resultado após salvar com sucesso
-        setResult(profile);
-        setHasProfile(true);
-        
-
-      } catch (error) {
-        console.error('Erro ao salvar perfil:', error);
-        alert('Erro ao salvar perfil. Tente novamente.');
-        // Reset em caso de erro
-        setSaving(false);
-        setResult(null);
-      } finally {
-        setSaving(false);
+      if (checkError) {
+        console.error('Erro ao verificar usuário:', checkError);
+        throw new Error('Usuário não encontrado no banco de dados');
       }
+
+      // Atualiza o perfil
+      const { data: updatedData, error: updateError } = await supabaseClient
+        .from('users')
+        .update({ 
+          risk_profile: profile,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', user.uid)
+        .select();
+
+      if (updateError) {
+        console.error('Erro ao atualizar perfil:', updateError);
+        throw updateError;
+      }
+
+      // Mostra o resultado imediatamente
+      setResult(profile);
+      setHasProfile(true);
+
+      // Atualiza o contexto do usuário em background (não-bloqueante)
+      refreshUser().catch((error) => {
+        console.error('Erro ao atualizar contexto:', error);
+      });
+
+    } catch (error: any) {
+      console.error('Erro ao salvar perfil:', error);
+      
+      // Mensagens de erro mais específicas
+      let errorMessage = 'Erro ao salvar perfil. ';
+      if (error.message?.includes('não encontrado')) {
+        errorMessage += 'Usuário não encontrado. Faça logout e login novamente.';
+      } else {
+        errorMessage += error.message || 'Tente novamente em alguns instantes.';
+      }
+      
+      alert(errorMessage);
+      
+      // Reset em caso de erro
+      setResult(null);
+      setHasProfile(false);
+    } finally {
+      // SEMPRE desativa o loading, independente de sucesso ou erro
+      setSaving(false);
     }
   };
 
@@ -346,12 +380,19 @@ export default function PerfilPage() {
               </Alert>
 
               {/* Botões */}
-              <div className="flex justify-center">
+              <div className="flex flex-col sm:flex-row justify-center gap-3">
+                <Button
+                  onClick={() => router.push('/investimentos')}
+                  size="lg"
+                  className="min-w-[250px] bg-gradient-to-r from-brand-orange to-brand-red"
+                >
+                  Ver Investimentos Recomendados
+                </Button>
                 <Button
                   onClick={resetQuiz}
                   variant="outline"
                   size="lg"
-                  className="min-w-[300px]"
+                  className="min-w-[250px]"
                 >
                   Refazer Questionário
                 </Button>

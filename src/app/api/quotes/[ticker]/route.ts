@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
-import yahooFinance from 'yahoo-finance2';
 import { getCachedQuote, setCachedQuote } from '@/services/supabase/quotesCache';
+
+const BRAPI_BASE_URL = 'https://brapi.dev/api';
+const BRAPI_API_KEY = process.env.BRAPI_API_KEY || process.env.NEXT_PUBLIC_BRAPI_API_KEY || '';
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +12,7 @@ export async function GET(
   const { ticker } = await params;
   
   try {
-    // Verificar cache primeiro
+    // 1. Verificar cache primeiro (validade: 5 minutos)
     const cached = await getCachedQuote(ticker);
     if (cached) {
       return NextResponse.json({
@@ -19,76 +21,48 @@ export async function GET(
       });
     }
 
-    // Tentar Yahoo Finance
-    try {
-      const tickerWithSuffix = ticker.endsWith('.SA') ? ticker : `${ticker}.SA`;
-      // @ts-ignore - yahoo-finance2 types issue
-      const quote = await yahooFinance.quote(tickerWithSuffix, {}, { validateResult: false });
-      
-      if (quote && quote.regularMarketPrice) {
-        const quoteData = {
-          ticker: ticker,
-          price: quote.regularMarketPrice,
-          change: quote.regularMarketChange || 0,
-          changePercent: quote.regularMarketChangePercent || 0,
-          volume: quote.regularMarketVolume,
-          lastUpdate: new Date().toISOString(),
-          timestamp: Date.now()
-        };
-        
-        // Salvar no cache
-        await setCachedQuote(ticker, quoteData);
-        
-        return NextResponse.json({
-          ...quoteData,
-          source: 'yahoo-finance'
-        });
-      }
-    } catch (yahooError) {
-      console.error(`Yahoo Finance falhou para ${ticker}:`, yahooError);
+    // 2. Buscar da Brapi
+    const brapiUrl = BRAPI_API_KEY 
+      ? `${BRAPI_BASE_URL}/quote/${ticker}?token=${BRAPI_API_KEY}`
+      : `${BRAPI_BASE_URL}/quote/${ticker}`;
+    
+    const response = await fetch(brapiUrl);
+    
+    if (!response.ok) {
+      return NextResponse.json(
+        { error: 'Cotação não encontrada' },
+        { status: 404 }
+      );
     }
 
-    // Fallback: brapi.dev
-    try {
-      const apiKey = process.env.BRAPI_API_KEY || process.env.NEXT_PUBLIC_BRAPI_API_KEY || '';
-      const brapiUrl = apiKey 
-        ? `https://brapi.dev/api/quote/${ticker}?token=${apiKey}`
-        : `https://brapi.dev/api/quote/${ticker}`;
-      
-      const response = await fetch(brapiUrl);
-      
-      if (response.ok) {
-        const data = await response.json();
-        const result = data.results?.[0];
-        
-        if (result) {
-          const quoteData = {
-            ticker: ticker,
-            price: result.regularMarketPrice,
-            change: result.regularMarketChange || 0,
-            changePercent: result.regularMarketChangePercent || 0,
-            volume: result.regularMarketVolume,
-            lastUpdate: new Date().toISOString(),
-            timestamp: Date.now()
-          };
-          
-          // Salvar no cache
-          await setCachedQuote(ticker, quoteData);
-          
-          return NextResponse.json({
-            ...quoteData,
-            source: 'brapi'
-          });
-        }
-      }
-    } catch (brapiError) {
-      console.error(`brapi.dev falhou para ${ticker}:`, brapiError);
+    const data = await response.json();
+    const result = data.results?.[0];
+    
+    if (!result) {
+      return NextResponse.json(
+        { error: 'Cotação não encontrada' },
+        { status: 404 }
+      );
     }
 
-    return NextResponse.json(
-      { error: 'Cotação não encontrada' },
-      { status: 404 }
-    );
+    const quoteData = {
+      ticker: ticker,
+      price: result.regularMarketPrice || result.close || 0,
+      change: result.regularMarketChange || 0,
+      changePercent: result.regularMarketChangePercent || 0,
+      volume: result.regularMarketVolume || 0,
+      lastUpdate: new Date().toISOString(),
+      timestamp: Date.now()
+    };
+    
+    // 3. Salvar no cache
+    await setCachedQuote(ticker, quoteData);
+    
+    return NextResponse.json({
+      ...quoteData,
+      source: 'brapi'
+    });
+
   } catch (error) {
     console.error(`Erro ao buscar cotação de ${ticker}:`, error);
     return NextResponse.json(

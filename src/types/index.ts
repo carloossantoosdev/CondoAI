@@ -1,5 +1,6 @@
 export type SubscriptionStatus = 'free' | 'paid';
-export type RiskProfile = 'conservador' | 'moderado' | 'arrojado' | null;
+export type RiskProfileValue = 'conservador' | 'moderado' | 'arrojado';
+export type RiskProfile = RiskProfileValue | null;
 export type InvestmentType = 'acao' | 'fundo' | 'rendaFixa' | 'cripto';
 export type AppointmentStatus = 'pending' | 'confirmed' | 'cancelled';
 

@@ -20,6 +20,7 @@ interface AuthContextType {
   signIn: (email: string, password: string) => Promise<void>;
   signUp: (email: string, password: string, name?: string) => Promise<void>;
   signOut: () => Promise<void>;
+  refreshUser: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,12 +45,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       // Se já existe, não fazer nada (preservar subscription_status)
       if (existingUser) {
-        console.log('✅ Usuário já existe, preservando dados:', existingUser);
         return;
       }
 
       // Se não existe, criar com status 'free'
-      console.log('📝 Criando novo usuário na tabela users');
       const displayName = supabaseUser.user_metadata?.full_name || 
                          supabaseUser.user_metadata?.name || 
                          supabaseUser.email?.split('@')[0] || 
@@ -64,8 +63,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           photo_url: supabaseUser.user_metadata?.avatar_url || null,
           subscription_status: 'free',
         });
-      
-      console.log('✅ Novo usuário criado com sucesso');
     } catch (error) {
       console.error('Erro ao criar/atualizar usuário:', error);
     }
@@ -85,7 +82,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         .maybeSingle();
 
       if (error || !data) {
-        console.warn('Usuário não encontrado mesmo após criar, usando dados do auth');
         return convertSupabaseUserToUser(supabaseUser);
       }
 
@@ -95,7 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         displayName: data.display_name || supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'Usuário',
         photoURL: data.photo_url || supabaseUser.user_metadata?.avatar_url || null,
         subscriptionStatus: data.subscription_status || 'free',
-        riskProfile: data.risk_profile,
+        riskProfile: data.risk_profile || undefined,
       };
     } catch (error) {
       console.error('Erro ao buscar dados do usuário:', error);
@@ -224,8 +220,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
+  const refreshUser = async () => {
+    if (!supabaseUser) {
+      return;
+    }
+    
+    try {
+      const userData = await fetchUserData(supabaseUser);
+      setUser(userData);
+    } catch (error) {
+      console.error('Erro ao atualizar dados do usuário:', error);
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, supabaseUser, loading, signIn, signUp, signOut }}>
+    <AuthContext.Provider value={{ user, supabaseUser, loading, signIn, signUp, signOut, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

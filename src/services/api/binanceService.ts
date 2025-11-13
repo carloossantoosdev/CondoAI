@@ -24,45 +24,68 @@ export const getBinanceAssets = async (): Promise<Asset[]> => {
 
     const data: BinanceTicker[] = await response.json();
     
+    // Cotação do dólar para converter para BRL (aproximado)
+    const USD_TO_BRL = 5.15; // Atualizar conforme necessário
+    
+    // Nomes completos das criptomoedas
+    const cryptoNames: Record<string, string> = {
+      'BTC': 'Bitcoin',
+      'ETH': 'Ethereum',
+      'BNB': 'Binance Coin',
+      'ADA': 'Cardano',
+      'DOGE': 'Dogecoin',
+      'XRP': 'Ripple',
+      'DOT': 'Polkadot',
+      'UNI': 'Uniswap',
+      'LTC': 'Litecoin',
+      'LINK': 'Chainlink',
+      'MATIC': 'Polygon',
+      'SOL': 'Solana',
+      'AVAX': 'Avalanche',
+      'ATOM': 'Cosmos',
+    };
+    
     // Filtrar apenas criptos populares em USDT
     const filtered = data
       .filter(ticker => POPULAR_CRYPTOS.includes(ticker.symbol))
-      .map(ticker => ({
-        ticker: ticker.symbol.replace('USDT', ''),
-        nome: ticker.symbol.replace('USDT', ''),
-        preco: parseFloat(ticker.lastPrice),
-        variacao: parseFloat(ticker.priceChangePercent),
-        tipo: 'cripto' as const,
-      }));
+      .map(ticker => {
+        const symbol = ticker.symbol.replace('USDT', '');
+        return {
+          ticker: symbol,
+          nome: cryptoNames[symbol] || symbol,
+          preco: parseFloat(ticker.lastPrice) * USD_TO_BRL, // Converter para BRL
+          variacao: parseFloat(ticker.priceChangePercent),
+          tipo: 'cripto' as const,
+          logo: `https://assets.coingecko.com/coins/images/${getCoinGeckoId(symbol)}/large/${symbol.toLowerCase()}.png`,
+        };
+      });
 
     return filtered;
   } catch (error) {
     console.error('Erro ao buscar criptomoedas da Binance:', error);
-    return [];
+    throw error;
   }
 };
 
-export const getBinanceQuote = async (symbol: string): Promise<Asset | null> => {
-  try {
-    const ticker = symbol.includes('USDT') ? symbol : `${symbol}USDT`;
-    const response = await fetch(`${BINANCE_BASE_URL}/ticker/24hr?symbol=${ticker}`);
-    
-    if (!response.ok) {
-      throw new Error(`Erro ao buscar cotação de ${symbol}`);
-    }
+// Helper para mapear IDs do CoinGecko para logos
+function getCoinGeckoId(symbol: string): number {
+  const ids: Record<string, number> = {
+    'BTC': 1,
+    'ETH': 279,
+    'BNB': 825,
+    'ADA': 975,
+    'DOGE': 5,
+    'XRP': 44,
+    'DOT': 12171,
+    'UNI': 7083,
+    'LTC': 2,
+    'LINK': 1975,
+    'MATIC': 4713,
+    'SOL': 4128,
+    'AVAX': 12559,
+    'ATOM': 3794,
+  };
+  return ids[symbol] || 1;
+}
 
-    const data: BinanceTicker = await response.json();
-
-    return {
-      ticker: data.symbol.replace('USDT', ''),
-      nome: data.symbol.replace('USDT', ''),
-      preco: parseFloat(data.lastPrice),
-      variacao: parseFloat(data.priceChangePercent),
-      tipo: 'cripto',
-    };
-  } catch (error) {
-    console.error(`Erro ao buscar cotação de ${symbol}:`, error);
-    return null;
-  }
-};
 

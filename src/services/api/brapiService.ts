@@ -1,4 +1,4 @@
-import { Asset } from '@/types';
+import { Asset, InvestmentType } from '@/types';
 
 const BRAPI_BASE_URL = 'https://brapi.dev/api';
 const BRAPI_API_KEY = process.env.BRAPI_API_KEY || process.env.NEXT_PUBLIC_BRAPI_API_KEY || '';
@@ -18,6 +18,23 @@ export interface BrapiPaginatedResponse {
   itemsPerPage: number;
   totalCount: number;
   hasNextPage: boolean;
+}
+
+export interface BrapiCrypto {
+  currency: string;
+  currencyRateFromUSD: number;
+  coinName: string;
+  coin: string;
+  regularMarketChange: number;
+  regularMarketPrice: number;
+  regularMarketChangePercent: number;
+  regularMarketDayLow: number;
+  regularMarketDayHigh: number;
+  regularMarketDayRange: string;
+  regularMarketVolume: number;
+  marketCap: number;
+  regularMarketTime: string;
+  coinImageUrl: string;
 }
 
 export const getBrapiAssets = async (
@@ -67,7 +84,7 @@ export const getBrapiAssets = async (
   }
 };
 
-export const getBrapiQuote = async (ticker: string): Promise<Asset | null> => {
+export const getBrapiQuote = async (ticker: string, tipo?: InvestmentType): Promise<Asset | null> => {
   try {
     const url = BRAPI_API_KEY 
       ? `${BRAPI_BASE_URL}/quote/${ticker}?token=${BRAPI_API_KEY}`
@@ -84,12 +101,19 @@ export const getBrapiQuote = async (ticker: string): Promise<Asset | null> => {
 
     if (!result) return null;
 
+    // Determinar o tipo baseado no ticker ou usar o tipo fornecido
+    let assetType: InvestmentType = tipo || 'acao';
+    if (!tipo) {
+      if (result.symbol.includes('11')) assetType = 'fundo';
+      else if (result.symbol.endsWith('USD') || result.symbol.includes('BTC') || result.symbol.includes('ETH')) assetType = 'cripto';
+    }
+
     return {
       ticker: result.symbol,
       nome: result.shortName || result.longName,
       preco: result.regularMarketPrice,
       variacao: result.regularMarketChangePercent,
-      tipo: result.symbol.includes('11') ? 'fundo' : 'acao',
+      tipo: assetType,
       logo: result.logourl,
     };
   } catch (error) {
@@ -97,4 +121,16 @@ export const getBrapiQuote = async (ticker: string): Promise<Asset | null> => {
     return null;
   }
 };
+
+/**
+ * Redireciona para o serviço da Binance (dados em tempo real)
+ * A Binance oferece API pública gratuita sem necessidade de chave
+ */
+export const getBrapiCrypto = async (): Promise<Asset[]> => {
+  // Importar dinamicamente para evitar problemas de circular dependency
+  const { getBinanceAssets } = await import('./binanceService');
+  return getBinanceAssets();
+};
+
+
 
