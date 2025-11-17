@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
@@ -37,22 +37,8 @@ export default function DashboardPage() {
     numeroInvestimentos: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
-  const hasLoadedRef = useRef(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
-
-    // Carregar investimentos apenas uma vez quando o usuário estiver disponível
-    if (user && !hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      loadInvestments();
-    }
-  }, [user, loading, router]);
-
-  const loadInvestments = async () => {
+  const loadInvestments = useCallback(async () => {
     if (!user) {
       setLoadingData(false);
       return;
@@ -139,7 +125,19 @@ export default function DashboardPage() {
     } finally {
       setLoadingData(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    // Carregar investimentos sempre que o usuário mudar ou a página for montada
+    if (user) {
+      loadInvestments();
+    }
+  }, [user, loading, router, loadInvestments]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', {

@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
+import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -39,25 +40,11 @@ export default function ContactPage() {
   const [success, setSuccess] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
-  const hasLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   // Verificar se o usuário é PRO
   const isPaidUser = user?.subscriptionStatus === 'paid';
 
-  useEffect(() => {
-    if (user && !hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      loadAppointments();
-    }
-  }, [user]);
-
-  const loadAppointments = async () => {
+  const loadAppointments = useCallback(async () => {
     if (!user) return;
 
     try {
@@ -91,7 +78,19 @@ export default function ContactPage() {
     } finally {
       setLoadingAppointments(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+      return;
+    }
+
+    // Carregar agendamentos sempre que o usuário mudar ou a página for montada
+    if (user) {
+      loadAppointments();
+    }
+  }, [user, loading, router, loadAppointments]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
