@@ -246,7 +246,7 @@ Depois das telas estáticas prontas:
 - Autenticação (Supabase)
 - Consumo de APIs (BRAPI, Binance, ANBIMA)
 - Rotas API (`/app/api/*`) e webhooks (Stripe)
-- Estado global + cache
+- Estado global
 - Testes unitários e E2E
 
 Esses tópicos terão sua própria documentação quando chegarmos à fase de lógica/aplicação.

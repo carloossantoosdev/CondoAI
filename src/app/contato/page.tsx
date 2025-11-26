@@ -3,7 +3,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import MainLayout from '@/components/layout/MainLayout';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
@@ -16,7 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
-import { Send, CheckCircle2, Loader2, Info, LightbulbIcon, Sparkles } from 'lucide-react';
+import { Send, CheckCircle2, Loader2, LightbulbIcon, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // Criar instância única do cliente Supabase

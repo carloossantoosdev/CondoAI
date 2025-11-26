@@ -497,24 +497,20 @@ const palavrasChaveExcluir = [
 src/app/api/quotes/[ticker]/route.ts
 ```
 
-### Estratégia de Caching
+### Estratégia de Fallback
 
-A API usa uma estratégia de **cache + fallback** para otimizar performance:
+A API usa uma estratégia de **fallback** para garantir disponibilidade:
 
 ```
-1. Verificar cache do Firebase
+1. Buscar do Yahoo Finance
    ↓
-   Se encontrou → Retornar do cache
+   Se encontrou → Retornar
    ↓
-2. Se não, buscar do Yahoo Finance
+2. Se falhou, buscar da brapi.dev (fallback)
    ↓
-   Se encontrou → Salvar no cache + Retornar
+   Se encontrou → Retornar
    ↓
-3. Se falhou, buscar da brapi.dev (fallback)
-   ↓
-   Se encontrou → Salvar no cache + Retornar
-   ↓
-4. Se tudo falhou → Erro 404
+3. Se tudo falhou → Erro 404
 ```
 
 ### Código Simplificado
@@ -526,13 +522,7 @@ export async function GET(
 ) {
   const { ticker } = await params;
   
-  // 1. Verificar cache
-  const cached = await getCachedQuote(ticker);
-  if (cached) {
-    return NextResponse.json({ ...cached, source: 'cache' });
-  }
-  
-  // 2. Tentar Yahoo Finance
+  // 1. Tentar Yahoo Finance
   try {
     const quote = await yahooFinance.quote(`${ticker}.SA`);
     if (quote) {
@@ -542,23 +532,16 @@ export async function GET(
         change: quote.regularMarketChange,
         changePercent: quote.regularMarketChangePercent
       };
-      await setCachedQuote(ticker, quoteData);
       return NextResponse.json({ ...quoteData, source: 'yahoo-finance' });
     }
   } catch (error) {
-    // 3. Fallback: brapi.dev
+    // 2. Fallback: brapi.dev
     const response = await fetch(`https://brapi.dev/api/quote/${ticker}`);
     const data = await response.json();
-    // ... salvar e retornar
+    // ... processar e retornar
   }
 }
 ```
-
-### Por que Cache?
-
-- **Performance:** Não precisa buscar dados externos toda vez
-- **Economia:** Reduz chamadas a APIs externas (que podem ter limites)
-- **Confiabilidade:** Se a API externa falhar, ainda temos dados em cache
 
 ---
 
@@ -886,7 +869,6 @@ Fundos: 25%       Renda Fixa: 19%
 | **Gráfico de Pizza** | Distribuição visual dos tipos de ativos |
 | **API de Cotações** | Busca preços atualizados dos ativos |
 | **API de Notícias** | Busca notícias do mercado via RSS |
-| **Cache** | Armazena dados para evitar buscas repetidas |
 
 ---
 
@@ -896,7 +878,6 @@ Fundos: 25%       Renda Fixa: 19%
 - `src/app/api/quotes/[ticker]/route.ts` - API de cotações
 - `src/app/api/news/route.ts` - API de notícias
 - `src/services/api/investmentService.ts` - Serviço de busca de cotações
-- `src/services/firebase/quotesCache.ts` - Sistema de cache
 
 ---
 

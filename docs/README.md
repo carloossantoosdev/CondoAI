@@ -12,7 +12,24 @@ Explicar de forma simples e didática como funciona cada parte da aplicação, c
 
 ## 📖 Índice da Documentação
 
-### 🔰 Comece aqui!
+### 🚀 Criando o Projeto do Zero
+
+#### [00 - Guia Completo de Criação do Projeto](./00-GUIA-COMPLETO-CRIACAO-PROJETO.md)
+**O que você vai aprender:**
+- Como instalar todas as ferramentas necessárias
+- Passo a passo completo para criar o projeto Next.js
+- Configuração do Tailwind CSS e shadcn/ui
+- Setup do Supabase (banco de dados)
+- Setup do Stripe (pagamentos)
+- Como fazer o primeiro commit no GitHub
+- Estrutura completa de pastas
+- Comandos essenciais para desenvolvimento
+
+**📌 Leia este primeiro se você está criando o projeto do zero!**
+
+---
+
+### 🔰 Entendendo o Next.js
 
 #### [00 - Introdução ao Next.js App Router](./00-INTRODUCAO-NEXTJS.md)
 **O que você vai aprender:**
@@ -86,7 +103,6 @@ Explicar de forma simples e didática como funciona cada parte da aplicação, c
 - Lucro/Prejuízo e rentabilidade
 - Gráfico de distribuição (Recharts)
 - Busca de cotações atualizadas
-- Sistema de cache
 - Feed de notícias do mercado
 - Seção educativa
 
@@ -162,8 +178,7 @@ src/
 │   │   └── investmentService.ts
 │   └── firebase/                 # Configuração Firebase
 │       ├── auth.ts
-│       ├── config.ts
-│       └── quotesCache.ts
+│       └── config.ts
 │
 └── types/
     └── index.ts                  # TypeScript types
