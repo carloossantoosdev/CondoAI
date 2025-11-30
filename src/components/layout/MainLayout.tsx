@@ -13,7 +13,6 @@ import {
   LogOut,
   X,
   User,
-  Lightbulb,
   Newspaper,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,9 +31,8 @@ const menuItems: MenuItem[] = [
   { text: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/dashboard' },
   { text: 'Perfil', icon: <User className="w-5 h-5" />, path: '/perfil' },
   { text: 'Investimentos', icon: <TrendingUp className="w-5 h-5" />, path: '/investimentos' },
-  // { text: 'Dividendos', icon: <DollarSign className="w-5 h-5" />, path: '/dividendos' }, // Removido - será substituído por "Rendimentos"
+  { text: 'Dividendos', icon: <DollarSign className="w-5 h-5" />, path: '/dividendos' },
   { text: 'Notícias', icon: <Newspaper className="w-5 h-5" />, path: '/noticias' },
-  { text: 'Dicas', icon: <Lightbulb className="w-5 h-5" />, path: '/dicas' },
   { text: 'Planos', icon: <CreditCard className="w-5 h-5" />, path: '/planos' },
   { text: 'Contato', icon: <Mail className="w-5 h-5" />, path: '/contato' },
 ];

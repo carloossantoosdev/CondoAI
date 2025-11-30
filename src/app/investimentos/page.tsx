@@ -45,28 +45,17 @@ import { cn } from '@/lib/utils';
 // Criar instância única do cliente Supabase
 const supabaseClient = createClient();
 
-interface AssetWithAnalysis extends Asset {
-  precoTeto?: number;
-  recomendacao?: string;
-}
-
 export default function InvestmentPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [currentTab, setCurrentTab] = useState<'recomendados' | 'todos' | InvestmentType>('recomendados');
-  const [assets, setAssets] = useState<AssetWithAnalysis[]>([]);
+  const [assets, setAssets] = useState<Asset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
-  const [selectedAsset, setSelectedAsset] = useState<AssetWithAnalysis | null>(null);
+  const [selectedAsset, setSelectedAsset] = useState<Asset | null>(null);
   const [quantidade, setQuantidade] = useState<number>(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [investing, setInvesting] = useState(false);
   const [successMessage, setSuccessMessage] = useState('');
-  const [analisePrecoTeto, setAnalisePrecoTeto] = useState<{
-    precoTeto: number;
-    recomendacao: string;
-    explicacao: string;
-  } | null>(null);
-  const [loadingAnalise, setLoadingAnalise] = useState(false);
   const [page, setPage] = useState(1);
   const [serverTotalPages, setServerTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -129,34 +118,12 @@ export default function InvestmentPage() {
     setSelectedAsset(asset);
     setQuantidade(1);
     setModalOpen(true);
-    setAnalisePrecoTeto(null);
-    
-    if (asset.tipo === 'acao') {
-      try {
-        setLoadingAnalise(true);
-        const response = await fetch(`/api/fundamentals/${asset.ticker}`);
-        const data = await response.json();
-        
-        if (data && data.recomendacao) {
-          setAnalisePrecoTeto({
-            precoTeto: data.precoTeto || 0,
-            recomendacao: data.recomendacao,
-            explicacao: data.explicacao || 'Análise de preço'
-          });
-        }
-      } catch (error) {
-        console.error('Erro ao buscar análise:', error);
-      } finally {
-        setLoadingAnalise(false);
-      }
-    }
   };
 
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedAsset(null);
     setQuantidade(1);
-    setAnalisePrecoTeto(null);
   };
 
   const handleInvest = async () => {
@@ -213,7 +180,7 @@ export default function InvestmentPage() {
   // Paginação
   const useServerPagination = currentTab === 'acao' || currentTab === 'todos';
   
-  let paginatedAssets: AssetWithAnalysis[];
+  let paginatedAssets: Asset[];
   let totalPages: number;
 
   if (useServerPagination) {
@@ -597,62 +564,6 @@ export default function InvestmentPage() {
                     </div>
                   </CardContent>
                 </Card>
-
-                {/* Análise de Preço Teto */}
-                {selectedAsset.tipo === 'acao' && (
-                  <div>
-                    {loadingAnalise ? (
-                      <Card className="bg-slate-50 border-0">
-                        <CardContent className="p-4 flex items-center gap-2">
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span className="text-sm text-slate-600">Analisando preço...</span>
-                        </CardContent>
-                      </Card>
-                    ) : analisePrecoTeto ? (
-                      <Card 
-                        className={cn(
-                          "border-2",
-                          analisePrecoTeto.recomendacao === 'SEM DADOS' ? 'bg-slate-50 border-slate-200' :
-                          analisePrecoTeto.recomendacao.includes('COMPRA') ? 'bg-green-50 border-green-300' : 
-                          analisePrecoTeto.recomendacao === 'MANTER' ? 'bg-yellow-50 border-yellow-300' : 
-                          analisePrecoTeto.recomendacao === 'NEUTRO' ? 'bg-sky-50 border-sky-300' : 
-                          'bg-orange-50 border-orange-300'
-                        )}
-                      >
-                        <CardContent className="p-4 space-y-3">
-                          <span className="text-sm font-semibold text-slate-700 block">
-                            📊 Análise de Preço Teto (Método Bazin)
-                          </span>
-                          
-                          {analisePrecoTeto.recomendacao !== 'SEM DADOS' && (
-                            <div className="flex justify-between items-center">
-                              <span className="text-xs text-slate-600">Preço Teto Calculado</span>
-                              <span className="text-sm font-bold text-slate-900">
-                                {formatCurrency(analisePrecoTeto.precoTeto)}
-                              </span>
-                            </div>
-                          )}
-                          
-                          <Badge
-                            variant={
-                              analisePrecoTeto.recomendacao === 'SEM DADOS' ? 'secondary' :
-                              analisePrecoTeto.recomendacao.includes('COMPRA') ? 'success' :
-                              analisePrecoTeto.recomendacao === 'MANTER' ? 'warning' : 
-                              'destructive'
-                            }
-                            className="w-full justify-center py-2"
-                          >
-                            {analisePrecoTeto.recomendacao}
-                          </Badge>
-                          
-                          <p className="text-xs text-slate-600">
-                            {analisePrecoTeto.explicacao}
-                          </p>
-                        </CardContent>
-                      </Card>
-                    ) : null}
-                  </div>
-                )}
 
                 {/* Quantidade */}
                 <div className="space-y-3">

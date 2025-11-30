@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getCachedQuote, setCachedQuote } from '@/services/supabase/quotesCache';
 
 const BRAPI_BASE_URL = 'https://brapi.dev/api';
 const BRAPI_API_KEY = process.env.BRAPI_API_KEY || process.env.NEXT_PUBLIC_BRAPI_API_KEY || '';
@@ -8,20 +7,10 @@ export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ ticker: string }> }
 ) {
-  // Next.js 15+ requer await em params
   const { ticker } = await params;
   
   try {
-    // 1. Verificar cache primeiro (validade: 5 minutos)
-    const cached = await getCachedQuote(ticker);
-    if (cached) {
-      return NextResponse.json({
-        ...cached,
-        source: 'cache'
-      });
-    }
-
-    // 2. Buscar da Brapi
+    // Buscar cotação diretamente da BrAPI
     const brapiUrl = BRAPI_API_KEY 
       ? `${BRAPI_BASE_URL}/quote/${ticker}?token=${BRAPI_API_KEY}`
       : `${BRAPI_BASE_URL}/quote/${ticker}`;
@@ -55,13 +44,7 @@ export async function GET(
       timestamp: Date.now()
     };
     
-    // 3. Salvar no cache
-    await setCachedQuote(ticker, quoteData);
-    
-    return NextResponse.json({
-      ...quoteData,
-      source: 'brapi'
-    });
+    return NextResponse.json(quoteData);
 
   } catch (error) {
     console.error(`Erro ao buscar cotação de ${ticker}:`, error);

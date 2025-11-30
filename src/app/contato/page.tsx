@@ -67,6 +67,8 @@ export default function ContactPage() {
         .eq('user_id', user.uid)
         .order('created_at', { ascending: false });
 
+        console.log(data);
+
       if (error) {
         console.error('Erro ao carregar agendamentos:', error);
         return;
@@ -132,10 +134,9 @@ export default function ContactPage() {
       setSelectedTime('');
       
       await loadAppointments();
-
-      setTimeout(() => {
-        setSuccess(false);
-      }, 5000);
+     
+      setSuccess(false);
+     
     } catch (error) {
       console.error('Erro ao enviar solicitação:', error);
       alert('Erro ao enviar solicitação. Tente novamente.');
