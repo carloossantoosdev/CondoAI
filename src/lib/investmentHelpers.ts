@@ -52,42 +52,6 @@ export function isInvestmentCompatible(
   return allowedTypes.includes(investmentType);
 }
 
-/**
- * Retorna mensagem explicativa de por que um investimento não é compatível
- */
-export function getIncompatibilityReason(
-  investmentType: InvestmentType,
-  userProfile: RiskProfile
-): string {
-  if (!userProfile) {
-    return 'Complete seu perfil de investidor para acessar este tipo de investimento.';
-  }
-
-  const reasons: Record<InvestmentType, Record<string, string>> = {
-    cripto: {
-      conservador: 'Criptomoedas possuem alta volatilidade e são recomendadas apenas para perfis arrojados.',
-      moderado: 'Criptomoedas possuem alta volatilidade e são recomendadas apenas para perfis arrojados.',
-      arrojado: '', // Compatível
-    },
-    acao: {
-      conservador: 'Ações possuem risco médio-alto e são recomendadas para perfis moderados ou arrojados.',
-      moderado: '', // Compatível
-      arrojado: '', // Compatível
-    },
-    fundo: {
-      conservador: 'Fundos de investimento podem ter riscos variados. Recomendamos começar pela renda fixa.',
-      moderado: '', // Compatível
-      arrojado: '', // Compatível
-    },
-    rendaFixa: {
-      conservador: '', // Compatível
-      moderado: '', // Compatível
-      arrojado: '', // Compatível
-    },
-  };
-
-  return reasons[investmentType][userProfile] || '';
-}
 
 /**
  * Retorna o nome legível do tipo de investimento

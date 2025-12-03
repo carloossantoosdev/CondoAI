@@ -68,7 +68,8 @@ export default function InvestmentPage() {
   }, [user, loading, router]);
 
   useEffect(() => {
-    loadAssets();
+    setPage(1); // Resetar para página 1 ao mudar de tab
+    loadAssets(1);
   }, [currentTab]);
 
   const loadAssets = async (pageNumber: number = 1) => {
@@ -514,17 +515,17 @@ export default function InvestmentPage() {
           <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-white">
             <DialogHeader className="space-y-3">
               <div className="flex items-center gap-3">
-                <Avatar className="h-14 w-14 border-2 border-brand-orange/30">
+                <Avatar className="h-14 w-14 border-2 border-blue-200">
                   {selectedAsset?.logo ? (
                     <AvatarImage src={selectedAsset.logo} alt={selectedAsset.ticker} />
                   ) : (
-                    <AvatarFallback className="bg-gradient-to-br from-brand-orange to-brand-red text-white font-bold">
+                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold">
                       {selectedAsset?.ticker.substring(0, 2)}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div>
-                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-brand-orange to-brand-red bg-clip-text text-transparent">
+                  <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                     {selectedAsset?.ticker}
                   </DialogTitle>
                   <DialogDescription className="text-base text-slate-600">
@@ -537,11 +538,11 @@ export default function InvestmentPage() {
             {selectedAsset && (
               <div className="space-y-5 py-4">
                 {/* Preço Atual - Destaque */}
-                <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-2 border-brand-orange/30 shadow-sm">
+                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-sm">
                   <CardContent className="p-5">
                     <div className="flex items-center justify-between">
                       <div>
-                        <span className="text-xs font-medium text-slate-500 block mb-1 uppercase tracking-wide">
+                        <span className="text-xs font-medium text-blue-600 block mb-1 uppercase tracking-wide">
                           💰 Preço Atual
                         </span>
                         <span className="text-3xl font-bold text-slate-900">
@@ -577,10 +578,10 @@ export default function InvestmentPage() {
                       min="1"
                       value={quantidade}
                       onChange={(e) => setQuantidade(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="text-xl font-semibold h-14 pl-4 pr-12 border-2 border-slate-200 focus:border-brand-orange"
+                      className="text-xl font-semibold h-14 pl-4 pr-12 border-2 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                       placeholder="1"
                     />
-                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 text-sm font-medium">
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-blue-400 text-sm font-medium">
                       {quantidade > 1 ? 'cotas' : 'cota'}
                     </div>
                   </div>
@@ -590,21 +591,21 @@ export default function InvestmentPage() {
                 </div>
 
                 {/* Resumo do Investimento */}
-                <Card className="bg-gradient-to-br from-brand-orange via-red-600 to-brand-red border-0 text-white shadow-lg">
+                <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0 text-white shadow-lg">
                   <CardContent className="p-6">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-sm font-medium opacity-90 flex items-center gap-2">
+                      <span className="text-sm font-medium flex items-center gap-2">
                         <DollarSign className="w-4 h-4" />
                         Total a Investir
                       </span>
-                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-0">
+                      <Badge className="bg-white/20 hover:bg-white/30 text-white border-0 backdrop-blur-sm">
                         {quantidade} {quantidade > 1 ? 'cotas' : 'cota'}
                       </Badge>
                     </div>
                     <span className="text-4xl font-bold block">
                       {formatCurrency(selectedAsset.preco * quantidade)}
                     </span>
-                    <p className="text-xs opacity-75 mt-2">
+                    <p className="text-xs opacity-90 mt-2">
                       Este valor será debitado da sua conta
                     </p>
                   </CardContent>
@@ -617,14 +618,14 @@ export default function InvestmentPage() {
                 variant="outline"
                 onClick={handleCloseModal}
                 disabled={investing}
-                className="flex-1 h-12"
+                className="flex-1 h-12 border-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400"
               >
                 Cancelar
               </Button>
               <Button
                 onClick={handleInvest}
                 disabled={investing}
-                className="flex-1 gap-2 h-12 bg-gradient-to-r from-brand-orange to-brand-red hover:from-brand-orange/90 hover:to-brand-red/90 text-white font-semibold shadow-lg"
+                className="flex-1 gap-2 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold shadow-lg"
               >
                 {investing ? (
                   <>
@@ -633,7 +634,6 @@ export default function InvestmentPage() {
                   </>
                 ) : (
                   <>
-                    <TrendingUpIcon className="w-5 h-5" />
                     Confirmar Investimento
                   </>
                 )}

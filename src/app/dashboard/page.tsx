@@ -1,32 +1,22 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import MainLayout from '@/components/layout/MainLayout';
 import { createClient } from '@/lib/supabase/client';
 import { Investment, PortfolioSummary } from '@/types';
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import {
-  TrendingUp,
-  TrendingDown,
-  Wallet,
-  PiggyBank,
-  Target,
-  Briefcase,
-} from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AssetWithDividends, DividendData } from '@/types/dividends';
 import { Loading } from '@/components/ui/loading';
-import { cn } from '@/lib/utils';
+import { PortfolioSummaryComponent } from '@/components/dashboard/PortfolioSummary';
+import { DividendsSection } from '@/components/dashboard/DividendsSection';
 
-const COLORS = ['#ff6b2d', '#10b981', '#f59e0b', '#b91c1c'];
-
-// Criar instância única do cliente Supabase
 const supabaseClient = createClient();
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [summary, setSummary] = useState<PortfolioSummary>({
     valorTotal: 0,
@@ -36,7 +26,10 @@ export default function DashboardPage() {
     numeroInvestimentos: 0,
   });
   const [loadingData, setLoadingData] = useState(true);
-  const hasLoadedRef = useRef(false);
+  
+  const [assets, setAssets] = useState<AssetWithDividends[]>([]);
+  const [loadingDividends, setLoadingDividends] = useState(true);
+  const [errorDividends, setErrorDividends] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -44,18 +37,18 @@ export default function DashboardPage() {
       return;
     }
 
-    // Carregar investimentos apenas uma vez quando o usuário estiver disponível
-    if (user && !hasLoadedRef.current) {
-      hasLoadedRef.current = true;
-      loadInvestments();
-    }
-  }, [user, loading, router]);
-
-  const loadInvestments = async () => {
-    if (!user) {
+    if (!user?.uid) {
       setLoadingData(false);
+      setLoadingDividends(false);
       return;
     }
+
+    loadInvestments();
+    loadDividends();
+  }, [user?.uid, loading, router]);
+
+  const loadInvestments = async () => {
+    if (!user?.uid) return;
 
     try {
       setLoadingData(true);
@@ -100,7 +93,6 @@ export default function DashboardPage() {
         totalInvestido += investment.valorTotal;
 
         try {
-          // Usar API route para buscar cotação (server-side com API key)
           const response = await fetch(`/api/quotes/${investment.ticker}`);
           if (response.ok) {
             const quoteData = await response.json();
@@ -141,31 +133,83 @@ export default function DashboardPage() {
     }
   };
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-    }).format(value);
-  };
+  const loadDividends = async () => {
+    if (!user?.uid) return;
 
-  const getDistributionData = () => {
-    const distribution: Record<string, number> = {
-      acao: 0,
-      fundo: 0,
-      rendaFixa: 0,
-      cripto: 0,
-    };
+    try {
+      setLoadingDividends(true);
+      setErrorDividends(null);
 
-    investments.forEach((inv) => {
-      distribution[inv.type] += inv.valorTotal;
-    });
+      const { data: investmentsData, error: investError } = await supabaseClient
+        .from('investments')
+        .select('*')
+        .eq('user_id', user.uid)
+        .eq('type', 'acao');
 
-    return Object.entries(distribution)
-      .filter(([, value]) => value > 0)
-      .map(([key, value]) => ({
-        name: key === 'acao' ? 'Ações' : key === 'fundo' ? 'Fundos' : key === 'rendaFixa' ? 'Renda Fixa' : 'Cripto',
-        value,
-      }));
+      if (investError) {
+        console.error('Erro ao buscar investimentos:', investError);
+        setErrorDividends('Erro ao carregar investimentos');
+        return;
+      }
+
+      if (!investmentsData || investmentsData.length === 0) {
+        setAssets([]);
+        setLoadingDividends(false);
+        return;
+      }
+
+      const assetsWithDividends = await Promise.all(
+        investmentsData.map(async (inv: any) => {
+          try {
+            const response = await fetch(`/api/dividends/${inv.ticker}`);
+            const data = await response.json();
+
+            const dataCompra = new Date(inv.data_compra);
+            const umAnoAtras = new Date();
+            umAnoAtras.setFullYear(umAnoAtras.getFullYear() - 1);
+
+            const dividendsLast12Months = (data.dividends || [])
+              .filter((d: DividendData) => d.type === 'cash')
+              .filter((d: DividendData) => {
+                const divDate = new Date(d.date);
+                return divDate >= umAnoAtras && divDate <= new Date();
+              });
+
+            const totalRecebido = dividendsLast12Months
+              .filter((d: DividendData) => new Date(d.date) >= dataCompra)
+              .reduce((sum: number, d: DividendData) => sum + (d.value * inv.quantidade), 0);
+
+            return {
+              ticker: inv.ticker,
+              quantidade: inv.quantidade,
+              dataCompra: dataCompra,
+              valorInvestido: inv.valor_total,
+              dividends: dividendsLast12Months,
+              totalRecebido: totalRecebido,
+              dividendYield: data.summary?.dividendYield || 0,
+            };
+          } catch (err) {
+            console.error(`Erro ao buscar dividendos de ${inv.ticker}:`, err);
+            return {
+              ticker: inv.ticker,
+              quantidade: inv.quantidade,
+              dataCompra: new Date(inv.data_compra),
+              valorInvestido: inv.valor_total,
+              dividends: [],
+              totalRecebido: 0,
+              dividendYield: 0,
+            };
+          }
+        })
+      );
+
+      setAssets(assetsWithDividends);
+    } catch (err) {
+      console.error('Erro ao carregar dividendos:', err);
+      setErrorDividends('Erro ao carregar dados de dividendos');
+    } finally {
+      setLoadingDividends(false);
+    }
   };
 
   if (loading || !user) {
@@ -189,163 +233,18 @@ export default function DashboardPage() {
           <Loading size="lg" fullscreen />
         ) : (
           <>
-            {/* Cards de Resumo */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {/* Valor Total */}
-              <Card className="!bg-gradient-to-br !from-[#ff6b2d] !to-[#b91c1c] text-white border-0 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm opacity-90 mb-1">Valor Total</p>
-                      <p className="text-3xl font-bold">{formatCurrency(summary.valorTotal)}</p>
-                    </div>
-                    <div className="p-3 bg-white/20 rounded-lg">
-                      <Wallet className="w-6 h-6" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+            {/* Componente de Resumo do Portfólio */}
+            <PortfolioSummaryComponent 
+              summary={summary} 
+              investments={investments} 
+            />
 
-              {/* Total Investido */}
-              <Card className="!bg-gradient-to-br !from-[#b91c1c] !to-red-800 text-white border-0 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm opacity-90 mb-1">Total Investido</p>
-                      <p className="text-3xl font-bold">{formatCurrency(summary.totalInvestido)}</p>
-                    </div>
-                    <div className="p-3 bg-white/20 rounded-lg">
-                      <PiggyBank className="w-6 h-6" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Lucro/Prejuízo */}
-              <Card 
-                className={cn(
-                  "text-white border-0 hover:shadow-lg transition-shadow",
-                  summary.lucroOuPrejuizo >= 0
-                    ? "!bg-gradient-to-br !from-[#10b981] !to-green-700"
-                    : "!bg-gradient-to-br !from-orange-400 !to-red-600"
-                )}
-              >
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm opacity-90 mb-1">Lucro/Prejuízo</p>
-                      <p className="text-3xl font-bold">{formatCurrency(summary.lucroOuPrejuizo)}</p>
-                      <p className="text-sm mt-1 font-semibold">
-                        {summary.percentualRetorno >= 0 ? '+' : ''}{summary.percentualRetorno.toFixed(2)}%
-                      </p>
-                    </div>
-                    <div className="p-3 bg-white/20 rounded-lg">
-                      {summary.lucroOuPrejuizo >= 0 ? (
-                        <TrendingUp className="w-6 h-6" />
-                      ) : (
-                        <TrendingDown className="w-6 h-6" />
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Número de Investimentos */}
-              <Card className="!bg-gradient-to-br !from-[#f59e0b] !to-orange-500 text-white border-0 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
-                    <div>
-                      <p className="text-sm opacity-90 mb-1">Investimentos</p>
-                      <p className="text-3xl font-bold">{summary.numeroInvestimentos}</p>
-                      <p className="text-sm mt-1">
-                        {summary.numeroInvestimentos === 1 ? 'ativo' : 'ativos'}
-                      </p>
-                    </div>
-                    <div className="p-3 bg-white/20 rounded-lg">
-                      <Briefcase className="w-6 h-6" />
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Gráficos e Lista */}
-            {investments.length > 0 ? (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                {/* Distribuição do Portfólio */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl">Distribuição do Portfólio</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <ResponsiveContainer width="100%" height={300}>
-                      <PieChart>
-                        <Pie
-                          data={getDistributionData()}
-                          cx="50%"
-                          cy="50%"
-                          labelLine={false}
-                          label={(entry: any) => `${entry.name}: ${((entry.value / summary.totalInvestido) * 100).toFixed(1)}%`}
-                          outerRadius={90}
-                          fill="#8884d8"
-                          dataKey="value"
-                        >
-                          {getDistributionData().map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                          ))}
-                        </Pie>
-                        <Tooltip formatter={(value: number) => formatCurrency(value)} />
-                        <Legend />
-                      </PieChart>
-                    </ResponsiveContainer>
-                  </CardContent>
-                </Card>
-
-                {/* Investimentos Recentes */}
-                <Card>
-                  <CardHeader>
-                    <CardTitle className="text-xl">Investimentos Recentes</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-2">
-                      {investments.slice(0, 5).map((inv) => (
-                        <div
-                          key={inv.id}
-                          className="flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 transition-colors"
-                        >
-                          <div>
-                            <p className="font-semibold text-slate-900">{inv.ticker}</p>
-                            <p className="text-sm text-slate-600">{inv.nome}</p>
-                          </div>
-                          <div className="text-right">
-                            <p className="font-semibold text-slate-900">
-                              {formatCurrency(inv.valorTotal)}
-                            </p>
-                            <p className="text-sm text-slate-600">
-                              {inv.quantidade} {inv.quantidade === 1 ? 'unidade' : 'unidades'}
-                            </p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            ) : (
-              <Card className="border-2 border-dashed">
-                <CardContent className="flex flex-col items-center justify-center py-12">
-                  <div className="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-4 border-2 border-brand-orange">
-                    <Target className="w-10 h-10 text-brand-orange" />
-                  </div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">
-                    Você ainda não tem investimentos
-                  </h3>
-                  <p className="text-slate-600 text-center max-w-md">
-                    Comece sua jornada de investimentos explorando nossos ativos disponíveis
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            {/* Componente de Dividendos */}
+            <DividendsSection
+              assets={assets}
+              loading={loadingDividends}
+              error={errorDividends}
+            />
           </>
         )}
       </div>

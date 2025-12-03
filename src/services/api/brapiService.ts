@@ -43,9 +43,13 @@ export const getBrapiAssets = async (
   limit: number = 50
 ): Promise<{ assets: Asset[]; totalPages: number; totalCount: number }> => {
   try {
+    // Se estiver buscando FIIs, precisamos buscar mais resultados porque eles são filtrados
+    // Na prática, FIIs são cerca de 20-30% dos ativos
+    const effectiveLimit = type === 'fii' ? limit * 3 : limit;
+    
     const url = BRAPI_API_KEY 
-      ? `${BRAPI_BASE_URL}/quote/list?page=${page}&limit=${limit}&sortBy=volume&sortOrder=desc&token=${BRAPI_API_KEY}`
-      : `${BRAPI_BASE_URL}/quote/list?page=${page}&limit=${limit}&sortBy=volume&sortOrder=desc`;
+      ? `${BRAPI_BASE_URL}/quote/list?page=${page}&limit=${effectiveLimit}&sortBy=volume&sortOrder=desc&token=${BRAPI_API_KEY}`
+      : `${BRAPI_BASE_URL}/quote/list?page=${page}&limit=${effectiveLimit}&sortBy=volume&sortOrder=desc`;
     
     const response = await fetch(url);
     
@@ -62,6 +66,8 @@ export const getBrapiAssets = async (
       filtered = stocks.filter(s => !s.stock.includes('11')); // Filtro simples para ações
     } else if (type === 'fii') {
       filtered = stocks.filter(s => s.stock.includes('11')); // FIIs geralmente terminam com 11
+      // Limitar ao número original solicitado após filtrar
+      filtered = filtered.slice(0, limit);
     }
 
     const assets = filtered.map(stock => ({

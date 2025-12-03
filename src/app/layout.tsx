@@ -6,8 +6,8 @@ import './globals.css';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'Investment Platform - Sua plataforma de investimentos',
-  description: 'Plataforma completa para gerenciar seus investimentos',
+  title: 'Finanças Pro - Sua plataforma para simular investimentos',
+  description: 'Plataforma completa para simular investimentos e ganhar dinheiro com investimentos',
 };
 
 export default function RootLayout({

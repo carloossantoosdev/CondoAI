@@ -1,102 +1,8 @@
 @import "tailwindcss";
-@plugin "tailwindcss-animate";
 
-  :root {
-    /* Cores principais baseadas no design */
-    --brand-orange: #ff6b2d;
-    --brand-red: #b91c1c;
-    --brand-dark: #3d1f1f;
-    --brand-yellow: #f59e0b;
-    --brand-green: #10b981;
-    
-    /* Variáveis HSL para Tailwind */
-    --background: 210 20% 95%; /* Tom de gelo azulado suave */
-    --foreground: 0 0% 3.9%;
-    --card: 210 20% 98%; /* Cards um pouco mais claros */
-    --card-foreground: 0 0% 3.9%;
-    --popover: 210 20% 98%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 16 100% 59%; /* #ff6b2d em HSL */
-    --primary-foreground: 0 0% 100%;
-    --secondary: 0 72% 41%; /* #b91c1c em HSL */
-    --secondary-foreground: 0 0% 100%;
-    --muted: 210 15% 92%; /* Tom de gelo mais suave para áreas muted */
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 38 92% 50%; /* #f59e0b amarelo em HSL */
-    --accent-foreground: 0 0% 9%;
-    --success: 160 84% 39%; /* #10b981 verde em HSL */
-    --success-foreground: 0 0% 100%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 210 15% 88%; /* Bordas com tom de gelo */
-    --input: 210 15% 88%;
-    --ring: 16 100% 59%;
-    --radius: 0.75rem;
-  }
-
-.dark {
-  /* Cores principais baseadas no design */
-  --brand-orange: #ff6b2d;
-  --brand-red: #b91c1c;
-  --brand-dark: #1a0f0f;
-  --brand-yellow: #fbbf24;
-  --brand-green: #34d399;
-  
-  /* Variáveis HSL para Tailwind - modo escuro */
-  --background: 0 0% 7%; /* Marrom escuro */
-  --foreground: 0 0% 98%;
-  --card: 0 0% 10%;
-  --card-foreground: 0 0% 98%;
-  --popover: 0 0% 10%;
-  --popover-foreground: 0 0% 98%;
-  --primary: 16 100% 59%; /* #ff6b2d */
-  --primary-foreground: 0 0% 100%;
-  --secondary: 0 72% 41%; /* #b91c1c */
-  --secondary-foreground: 0 0% 100%;
-  --muted: 0 0% 14.9%;
-  --muted-foreground: 0 0% 63.9%;
-  --accent: 38 92% 50%; /* amarelo */
-  --accent-foreground: 0 0% 9%;
-  --success: 160 84% 52%; /* verde mais claro para dark mode */
-  --success-foreground: 0 0% 9%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 0 0% 98%;
-  --border: 0 0% 20%;
-  --input: 0 0% 20%;
-  --ring: 16 100% 59%;
-}
-
-* {
-  border-color: hsl(var(--border));
-}
-
-body {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  font-feature-settings: "rlig" 1, "calt" 1;
-}
-
-/* Scrollbar personalizada */
-::-webkit-scrollbar {
-  width: 10px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-}
-
-::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
-}
-
-/* Animações suaves */
 * {
   scroll-behavior: smooth;
+  border-color: #e5e7eb;
 }
 
 /* Cursor pointer para todos os botões */
@@ -112,10 +18,6 @@ button,
 h1, h2, h3, h4, h5, h6 {
   font-weight: 700;
   letter-spacing: -0.02em;
-}
-
-p {
-  line-height: 1.7;
 }
 
 /* Ajustes de fonte para mobile */
@@ -154,92 +56,4 @@ p {
   }
 }
 
-/* Gradientes Personalizados - Baseados no novo design */
-.gradient-brand-primary {
-  background: linear-gradient(to right, #ff6b2d, #b91c1c);
-}
-
-.gradient-brand-warm {
-  background: linear-gradient(to bottom right, #ff6b2d, #dc2626);
-}
-
-.gradient-brand-dark {
-  background: linear-gradient(to bottom, #3d1f1f, #1a0f0f);
-}
-
-.gradient-orange-amber {
-  background: linear-gradient(to right, #ff6b2d, #f59e0b);
-}
-
-.gradient-orange-amber-br {
-  background: linear-gradient(to bottom right, #ff6b2d, #f59e0b);
-}
-
-.gradient-red-orange {
-  background: linear-gradient(to right, #b91c1c, #ff6b2d);
-}
-
-.gradient-pink-rose {
-  background: linear-gradient(to bottom right, #ec4899, #e11d48);
-}
-
-.gradient-cyan-blue {
-  background: linear-gradient(to bottom right, #06b6d4, #2563eb);
-}
-
-.gradient-amber-orange {
-  background: linear-gradient(to bottom right, #f59e0b, #ff6b2d);
-}
-
-.gradient-green-emerald {
-  background: linear-gradient(to right, #10b981, #059669);
-}
-
-.gradient-orange-light {
-  background: linear-gradient(to bottom right, #fed7aa, #fdba74);
-}
-
-.gradient-slate {
-  background: linear-gradient(to bottom right, #f8fafc, #f1f5f9);
-}
-
-.gradient-blue-violet {
-  background: linear-gradient(to bottom right, #2563eb, #7c3aed);
-}
-
-.gradient-orange-50 {
-  background: linear-gradient(to bottom right, #fff7ed, #ffedd5);
-}
-
-.gradient-orange-via-amber {
-  background: linear-gradient(to bottom right, #ff6b2d, #dc2626, #f59e0b);
-}
-
-.gradient-green-50 {
-  background: linear-gradient(to bottom right, #f0fdf4, #d1fae5);
-}
-
-.gradient-green-50-horizontal {
-  background: linear-gradient(to right, #f0fdf4, #d1fae5);
-}
-
-/* Gradientes com verde e amarelo para variações */
-.gradient-green-yellow {
-  background: linear-gradient(to right, #10b981, #f59e0b);
-}
-
-.gradient-orange-green {
-  background: linear-gradient(to bottom right, #ff6b2d, #10b981);
-}
-
-/* Garantir backgrounds sólidos em modais */
-[role="dialog"],
-[data-radix-dialog-content] {
-  background-color: white !important;
-}
-
-.dark [role="dialog"],
-.dark [data-radix-dialog-content] {
-  background-color: hsl(var(--card)) !important;
-}
 

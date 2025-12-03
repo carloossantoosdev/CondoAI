@@ -31,7 +31,6 @@ const menuItems: MenuItem[] = [
   { text: 'Dashboard', icon: <LayoutDashboard className="w-5 h-5" />, path: '/dashboard' },
   { text: 'Perfil', icon: <User className="w-5 h-5" />, path: '/perfil' },
   { text: 'Investimentos', icon: <TrendingUp className="w-5 h-5" />, path: '/investimentos' },
-  { text: 'Dividendos', icon: <DollarSign className="w-5 h-5" />, path: '/dividendos' },
   { text: 'Notícias', icon: <Newspaper className="w-5 h-5" />, path: '/noticias' },
   { text: 'Planos', icon: <CreditCard className="w-5 h-5" />, path: '/planos' },
   { text: 'Contato', icon: <Mail className="w-5 h-5" />, path: '/contato' },
