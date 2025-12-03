@@ -52,6 +52,7 @@ const PaginationLink = ({
         variant: isActive ? "outline" : "ghost",
         size,
       }),
+      isActive && "!bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] text-white border-transparent shadow-md hover:opacity-90",
       className
     )}
     {...props}
@@ -106,6 +107,82 @@ const PaginationEllipsis = ({
 )
 PaginationEllipsis.displayName = "PaginationEllipsis"
 
+// Helper component para facilitar uso da paginação
+interface SmartPaginationProps {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+}
+
+const SmartPagination = ({
+  currentPage,
+  totalPages,
+  onPageChange,
+}: SmartPaginationProps) => {
+  if (totalPages <= 1) return null;
+
+  // Gerar array de páginas a serem exibidas
+  const renderPageNumbers = () => {
+    const pages = [];
+    
+    for (let i = 1; i <= totalPages; i++) {
+      // Mostrar sempre: primeira, última, atual e adjacentes
+      const showPage = 
+        i === 1 || 
+        i === totalPages || 
+        Math.abs(i - currentPage) <= 1;
+
+      const showEllipsisBefore = i === currentPage - 2 && currentPage > 3;
+      const showEllipsisAfter = i === currentPage + 2 && currentPage < totalPages - 2;
+
+      if (showEllipsisBefore || showEllipsisAfter) {
+        pages.push(
+          <PaginationItem key={`ellipsis-${i}`}>
+            <PaginationEllipsis />
+          </PaginationItem>
+        );
+      } else if (showPage) {
+        pages.push(
+          <PaginationItem key={i}>
+            <PaginationLink
+              onClick={() => onPageChange(i)}
+              isActive={currentPage === i}
+              className="cursor-pointer"
+            >
+              {i}
+            </PaginationLink>
+          </PaginationItem>
+        );
+      }
+    }
+    
+    return pages;
+  };
+
+  return (
+    <Pagination>
+      <PaginationContent>
+        <PaginationItem>
+          <PaginationPrevious 
+            onClick={() => currentPage > 1 && onPageChange(currentPage - 1)}
+            className={currentPage === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+          />
+        </PaginationItem>
+        
+        {renderPageNumbers()}
+        
+        <PaginationItem>
+          <PaginationNext 
+            onClick={() => currentPage < totalPages && onPageChange(currentPage + 1)}
+            className={currentPage === totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+          />
+        </PaginationItem>
+      </PaginationContent>
+    </Pagination>
+  );
+};
+SmartPagination.displayName = "SmartPagination";
+
 export {
   Pagination,
   PaginationContent,
@@ -114,5 +191,6 @@ export {
   PaginationPrevious,
   PaginationNext,
   PaginationEllipsis,
+  SmartPagination,
 }
 

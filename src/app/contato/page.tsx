@@ -15,6 +15,7 @@ import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
+import { PageHeader } from '@/components/ui/page-header';
 import { Send, CheckCircle2, Loader2, Info, LightbulbIcon, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -154,14 +155,11 @@ export default function ContactPage() {
     return (
       <MainLayout>
         <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold text-slate-900 mb-2">
-              Contato com Gestora 📞
-            </h1>
-            <p className="text-slate-600">
-              Agende uma reunião com nossa equipe de especialistas
-            </p>
-          </div>
+          <PageHeader 
+            title="Contato com Gestora"
+            description="Agende uma reunião com nossa equipe de especialistas"
+            icon="📞"
+          />
 
           <Card className="max-w-2xl mx-auto border-2 border-orange-200">
             <CardContent className="p-12 text-center space-y-6">
@@ -204,14 +202,11 @@ export default function ContactPage() {
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Contato com Gestora 📞
-          </h1>
-          <p className="text-slate-600">
-            Agende uma reunião e receba orientação especializada para seus investimentos
-          </p>
-        </div>
+        <PageHeader 
+          title="Contato com Gestora"
+          description="Agende uma reunião e receba orientação especializada para seus investimentos"
+          icon="📞"
+        />
 
         {success && (
           <Alert variant="success" className="border-green-200">

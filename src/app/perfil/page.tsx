@@ -10,6 +10,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
+import { PageHeader } from '@/components/ui/page-header';
 import { User, TrendingUp, Shield, Zap, CheckCircle2, Info } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -247,16 +248,13 @@ export default function PerfilPage() {
 
   return (
     <MainLayout>
-      <div className="space-y-6 max-w-4xl mx-auto">
+      <div className="space-y-6 max-w-4xl">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Perfil do Investidor 📊
-          </h1>
-          <p className="text-slate-600">
-            Descubra seu perfil de risco e receba recomendações personalizadas
-          </p>
-        </div>
+        <PageHeader 
+          title="Perfil do Investidor"
+          description="Descubra seu perfil de risco e receba recomendações personalizadas"
+          icon="📊"
+        />
 
         {/* Perfil Atual */}
         {hasProfile && result && (

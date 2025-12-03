@@ -8,6 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Investment, PortfolioSummary } from '@/types';
 import { AssetWithDividends, DividendData } from '@/types/dividends';
 import { Loading } from '@/components/ui/loading';
+import { PageHeader } from '@/components/ui/page-header';
 import { PortfolioSummaryComponent } from '@/components/dashboard/PortfolioSummary';
 import { DividendsSection } from '@/components/dashboard/DividendsSection';
 
@@ -220,20 +221,17 @@ export default function DashboardPage() {
     <MainLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Bem-vindo, {user.displayName}! 👋
-          </h1>
-          <p className="text-slate-600">
-            Aqui está um resumo dos seus investimentos
-          </p>
-        </div>
+        <PageHeader 
+          title={`Bem-vindo, ${user.displayName}!`}
+          description="Aqui está um resumo dos seus investimentos"
+          icon="👋"
+        />
 
         {loadingData ? (
           <Loading size="lg" fullscreen />
         ) : (
           <>
-            {/* Componente de Resumo do Portfólio */}
+            {/* Componente de Resumo da Carteira */}
             <PortfolioSummaryComponent 
               summary={summary} 
               investments={investments} 

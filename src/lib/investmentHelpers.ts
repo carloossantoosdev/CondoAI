@@ -80,97 +80,11 @@ export function getInvestmentTypeEmoji(type: InvestmentType): string {
 }
 
 /**
- * Filtra tipos de investimento disponíveis baseado no perfil
+ * Retorna tipos de investimento disponíveis baseado no perfil
  */
 export function getAvailableInvestmentTypes(
-  userProfile: RiskProfile,
-  includeAll: boolean = false
+  userProfile: RiskProfile
 ): InvestmentType[] {
-  if (includeAll) {
-    return ['acao', 'fundo', 'rendaFixa', 'cripto'];
-  }
-  
   const effectiveProfile = getEffectiveProfile(userProfile);
   return PERFIL_INVESTIMENTOS[effectiveProfile];
 }
-
-/**
- * Gera recomendações mockadas baseadas no perfil (será substituído por IA real)
- */
-export function getMockedRecommendations(userProfile: RiskProfile) {
-  const effectiveProfile = getEffectiveProfile(userProfile);
-  const recommendations: Record<RiskProfileValue, Array<{ ticker: string; tipo: InvestmentType; razao: string; confianca: string; preco: number }>> = {
-    conservador: [
-      {
-        ticker: 'TESOURO SELIC 2027',
-        tipo: 'rendaFixa' as InvestmentType,
-        razao: 'Baixo risco, liquidez diária, rendimento de 13,65% a.a.',
-        confianca: 'alta',
-        preco: 100,
-      },
-      {
-        ticker: 'CDB XP 120% CDI',
-        tipo: 'rendaFixa' as InvestmentType,
-        razao: 'Rendimento garantido, proteção FGC até R$ 250 mil',
-        confianca: 'alta',
-        preco: 1000,
-      },
-      {
-        ticker: 'LCA ITAÚ',
-        tipo: 'rendaFixa' as InvestmentType,
-        razao: 'Isento de IR, liquidez em 90 dias, 110% CDI',
-        confianca: 'média',
-        preco: 5000,
-      },
-    ],
-    moderado: [
-      {
-        ticker: 'VALE3',
-        tipo: 'acao' as InvestmentType,
-        razao: 'Empresa sólida, bom histórico de dividendos, preço atrativo',
-        confianca: 'alta',
-        preco: 62.5,
-      },
-      {
-        ticker: 'ITSA4',
-        tipo: 'acao' as InvestmentType,
-        razao: 'Holding diversificada, dividendos consistentes',
-        confianca: 'alta',
-        preco: 9.8,
-      },
-      {
-        ticker: 'HGLG11',
-        tipo: 'fundo' as InvestmentType,
-        razao: 'FII com bom dividend yield e gestão reconhecida',
-        confianca: 'média',
-        preco: 158.0,
-      },
-    ],
-    arrojado: [
-      {
-        ticker: 'BTC',
-        tipo: 'cripto' as InvestmentType,
-        razao: 'Principal criptomoeda, momento de consolidação após halving',
-        confianca: 'média',
-        preco: 350000,
-      },
-      {
-        ticker: 'MGLU3',
-        tipo: 'acao' as InvestmentType,
-        razao: 'Growth stock em recuperação, potencial de valorização',
-        confianca: 'média',
-        preco: 8.45,
-      },
-      {
-        ticker: 'ETH',
-        tipo: 'cripto' as InvestmentType,
-        razao: 'Ethereum com staking, ecossistema DeFi em crescimento',
-        confianca: 'alta',
-        preco: 19000,
-      },
-    ],
-  };
-
-  return recommendations[effectiveProfile] || recommendations.conservador;
-}
-

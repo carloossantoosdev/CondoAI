@@ -130,7 +130,6 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
           <Card>
             <CardHeader>
               <div className="flex items-center gap-2">
-                <History className="w-5 h-5 text-green-600" />
                 <CardTitle>Histórico de Proventos (Últimos 12 Meses)</CardTitle>
               </div>
               <div className="text-sm text-slate-600 mt-2">
