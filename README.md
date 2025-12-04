@@ -1,155 +1,605 @@
-# 💰 Investment Platform
+# 💰 Finanças Pro - Plataforma de Investimentos
 
-Uma plataforma simplificada de investimentos construída com Next.js 16, Firebase e Material UI para fins educacionais.
+<div align="center">
 
-> **📚 Projeto Acadêmico**: Este projeto foi simplificado para facilitar apresentações e explicações em ambiente acadêmico.
+![Next.js](https://img.shields.io/badge/Next.js-16.0-black?style=for-the-badge&logo=next.js)
+![React](https://img.shields.io/badge/React-19.0-61dafb?style=for-the-badge&logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.7-3178c6?style=for-the-badge&logo=typescript)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38bdf8?style=for-the-badge&logo=tailwind-css)
+![Supabase](https://img.shields.io/badge/Supabase-2.81-3ecf8e?style=for-the-badge&logo=supabase)
+![shadcn/ui](https://img.shields.io/badge/shadcn/ui-latest-000000?style=for-the-badge)
 
-## 🚀 Funcionalidades Core
+Uma plataforma moderna de investimentos construída com Next.js 16, Supabase e shadcn/ui para simulação e acompanhamento de investimentos.
 
-- ✅ **Autenticação** - Login seguro via Firebase Auth
-- ✅ **Dashboard** - Visão geral do portfólio com métricas
-- ✅ **Investimentos** - Compra/venda de ações, FIIs, cripto e renda fixa
-- ✅ **Dividendos** - Projeções e histórico de proventos
-- ✅ **APIs Reais** - Dados em tempo real do mercado brasileiro
-- ✅ **Planos** - Sistema de monetização com Stripe
-- ✅ **Contato** - Agendamento com gestora
+[Demo](#) | [Documentação](./docs) | [Contribuir](#-contribuindo)
 
-## 🛠️ Tecnologias
+</div>
 
-- **Frontend**: Next.js 16 + TypeScript + React 19
-- **UI**: Material UI v6
-- **Autenticação**: Firebase Auth
-- **Banco de Dados**: Firebase Firestore
-- **Pagamentos**: Stripe
-- **Gráficos**: Recharts
-- **APIs**: brapi.dev (ações), Binance (cripto)
+---
 
-## 📦 Instalação
+## 🚀 Funcionalidades
 
+### Core Features
+- ✅ **Autenticação Segura** - Sistema completo com Supabase Auth
+- ✅ **Dashboard Interativo** - Visão consolidada do portfólio com gráficos e métricas
+- ✅ **Explorar Investimentos** - Ações (B3), FIIs, Criptomoedas e Renda Fixa
+- ✅ **Dividendos Integrados** - Projeções e histórico de proventos no dashboard
+- ✅ **Notícias do Mercado** - Feed RSS atualizado com notícias financeiras
+- ✅ **Perfil de Investidor** - Questionário para determinar perfil de risco
+- ✅ **Sistema de Planos** - Monetização com Stripe (Free e PRO)
+- ✅ **Agendamento** - Contato com gestora (exclusivo PRO)
+
+### UX/UI Moderna
+- 🎨 **Design System Consistente** - Baseado em shadcn/ui e Tailwind CSS
+- 🔔 **Notificações Toast** - Feedback instantâneo para ações do usuário
+- ⚡ **Skeleton Loaders** - Indicadores de carregamento informativos
+- 📱 **Totalmente Responsivo** - Otimizado para mobile, tablet e desktop
+- ♿ **Acessível** - Componentes com suporte a keyboard navigation e screen readers
+- 🌙 **Interface Moderna** - Gradientes, animações e micro-interações
+
+---
+
+## 🛠️ Stack Tecnológica
+
+### Frontend
+- **Framework:** Next.js 16 (App Router) + React 19
+- **Linguagem:** TypeScript 5.7
+- **Estilização:** Tailwind CSS 4.1
+- **Componentes:** shadcn/ui (Radix UI)
+- **Ícones:** Lucide React
+- **Gráficos:** Recharts
+- **Animações:** tailwindcss-animate
+
+### Backend & Infraestrutura
+- **Autenticação:** Supabase Auth
+- **Banco de Dados:** Supabase (PostgreSQL)
+- **Pagamentos:** Stripe
+- **APIs Externas:** 
+  - brapi.dev (Ações B3 e FIIs)
+  - Binance API (Criptomoedas)
+  - Tesouro Direto (Renda Fixa)
+  - RSS Parser (Notícias)
+
+### Componentes shadcn/ui Implementados
+- **Básicos:** Alert, Avatar, Badge, Button, Card, Input, Label
+- **Navegação:** Sheet (sidebar mobile), Tabs, Pagination
+- **Feedback:** Dialog, Loading, Toast (customizado), Skeleton
+- **Formulários:** Select (dropdown com pesquisa)
+- **Dados:** Table
+- **Layout:** Page Header (reutilizável), Separator
+
+---
+
+## 📦 Instalação e Setup
+
+### Pré-requisitos
+- Node.js 18+ ou 20+
+- npm, yarn ou pnpm
+- Conta Supabase (gratuita)
+- Conta Stripe (modo teste gratuito)
+
+### 1. Clone o Repositório
 ```bash
-# Clone o repositório
-git clone <seu-repositorio>
-
-# Instale as dependências
-npm install
-
-# Configure as variáveis de ambiente (veja SETUP.md)
-cp .env.example .env.local
-
-# Execute em desenvolvimento
-npm run dev
+git clone https://github.com/seu-usuario/financas-pro.git
+cd financas-pro
 ```
 
-## 🔧 Configuração
+### 2. Instale as Dependências
+```bash
+# Com npm
+npm install
 
-Consulte o arquivo [SETUP.md](./SETUP.md) para instruções detalhadas de configuração do Firebase e Stripe.
+# Ou com yarn
+yarn install
 
-## 📁 Estrutura Simplificada
+# Ou com pnpm
+pnpm install
+```
+
+### 3. Configure as Variáveis de Ambiente
+
+Crie um arquivo `.env.local` na raiz do projeto:
+
+```bash
+# Supabase
+NEXT_PUBLIC_SUPABASE_URL=sua_url_do_supabase
+NEXT_PUBLIC_SUPABASE_ANON_KEY=sua_chave_anonima
+
+# APIs Externas
+BRAPI_API_KEY=sua_chave_brapi_dev
+
+# Stripe
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=sua_chave_publicavel_stripe
+STRIPE_SECRET_KEY=sua_chave_secreta_stripe
+STRIPE_WEBHOOK_SECRET=seu_webhook_secret
+```
+
+> 💡 **Dica:** Consulte [STRIPE_CONFIG.md](./STRIPE_CONFIG.md) para instruções detalhadas do Stripe
+
+### 4. Configure o Supabase
+
+Execute os seguintes comandos SQL no Supabase SQL Editor:
+
+```sql
+-- Tabela de Usuários
+CREATE TABLE users (
+  uid TEXT PRIMARY KEY,
+  email TEXT NOT NULL,
+  display_name TEXT,
+  photo_url TEXT,
+  subscription_status TEXT DEFAULT 'free',
+  risk_profile TEXT,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabela de Investimentos
+CREATE TABLE investments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id TEXT REFERENCES users(uid),
+  ticker TEXT NOT NULL,
+  type TEXT NOT NULL,
+  quantidade NUMERIC NOT NULL,
+  preco_medio NUMERIC NOT NULL,
+  data_compra TIMESTAMP NOT NULL,
+  valor_total NUMERIC NOT NULL,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+-- Tabela de Agendamentos
+CREATE TABLE appointments (
+  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id TEXT REFERENCES users(uid),
+  user_email TEXT NOT NULL,
+  user_name TEXT NOT NULL,
+  user_phone TEXT,
+  date DATE NOT NULL,
+  time TEXT NOT NULL,
+  message TEXT,
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+### 5. Execute o Projeto
+
+```bash
+# Modo desenvolvimento
+npm run dev
+
+# Build de produção
+npm run build
+
+# Executar produção
+npm start
+```
+
+Acesse: [http://localhost:3000](http://localhost:3000)
+
+---
+
+## 📁 Estrutura do Projeto
 
 ```
 src/
-├── app/                    # Páginas Next.js (App Router)
-│   ├── dashboard/         # Dashboard principal
-│   ├── investimentos/     # Compra/venda de ativos
-│   ├── dividendos/        # Projeções de dividendos
-│   ├── planos/            # Planos e assinatura
-│   ├── contato/           # Contato com gestora
-│   ├── login/             # Autenticação
-│   └── api/               # API routes
-│       ├── dividends/     # API de dividendos
-│       ├── quotes/        # API de cotações
-│       └── stripe/        # API de pagamentos
-├── components/            # Componentes React
-│   ├── layout/           # Layout e navegação
-│   └── DividendsSummary.tsx
-├── context/              # Contextos React
-│   └── AuthContext.tsx   # Autenticação global
-├── services/             # Serviços e integrações
-│   ├── firebase/        # Firebase (auth + firestore)
-│   ├── stripe/          # Stripe (pagamentos)
-│   └── api/             # APIs externas
-│       ├── brapiService.ts      # Ações BR
-│       ├── binanceService.ts    # Criptomoedas
-│       ├── anbimaService.ts     # FIIs
-│       └── openFinanceService.ts # Renda fixa
-└── types/               # TypeScript types
+├── app/                            # Next.js 16 App Router
+│   ├── api/                        # API Routes
+│   │   ├── dividends/[ticker]/     # API de dividendos por ticker
+│   │   ├── quotes/[ticker]/        # API de cotações em tempo real
+│   │   ├── news/                   # API de notícias (RSS feeds)
+│   │   └── stripe/                 # APIs do Stripe (checkout, webhook)
+│   ├── dashboard/                  # Dashboard principal
+│   │   └── page.tsx                # Portfólio + Dividendos integrados
+│   ├── investimentos/              # Explorar e investir
+│   │   └── page.tsx                # Grid de ativos com filtros
+│   ├── noticias/                   # Notícias do mercado
+│   │   └── page.tsx                # Feed de notícias financeiras
+│   ├── perfil/                     # Perfil de investidor
+│   │   └── page.tsx                # Questionário + recomendações
+│   ├── contato/                    # Agendamento com gestora (PRO)
+│   │   └── page.tsx                # Formulário com calendário
+│   ├── planos/                     # Planos e checkout
+│   │   ├── page.tsx                # Comparação de planos
+│   │   └── sucesso/page.tsx        # Confirmação de pagamento
+│   ├── login/                      # Autenticação
+│   │   └── page.tsx                # Login/Registro
+│   ├── layout.tsx                  # Layout raiz com providers
+│   └── globals.css                 # Estilos globais + Tailwind
+│
+├── components/
+│   ├── dashboard/                  # Componentes do dashboard
+│   │   ├── PortfolioSummary.tsx    # Cards de resumo + gráfico de distribuição
+│   │   └── DividendsSection.tsx    # Dividendos + histórico detalhado
+│   ├── layout/                     # Layout e navegação
+│   │   ├── MainLayout.tsx          # Layout principal com sidebar
+│   │   └── SidebarNav.tsx          # Componente de navegação reutilizável
+│   ├── ui/                         # shadcn/ui components
+│   │   ├── alert.tsx               # Alertas e avisos
+│   │   ├── avatar.tsx              # Avatar do usuário
+│   │   ├── badge.tsx               # Tags e labels
+│   │   ├── button.tsx              # Botões com variantes
+│   │   ├── card.tsx                # Containers de conteúdo
+│   │   ├── dialog.tsx              # Modais e dialogs
+│   │   ├── input.tsx               # Inputs de formulário
+│   │   ├── label.tsx               # Labels de formulário
+│   │   ├── loading.tsx             # Spinner de carregamento
+│   │   ├── select.tsx              # Dropdown com pesquisa ⭐
+│   │   ├── skeleton.tsx            # Base para skeletons ⭐
+│   │   ├── asset-card-skeleton.tsx # Skeleton para cards de ativos ⭐
+│   │   ├── dashboard-card-skeleton.tsx # Skeleton para dashboard ⭐
+│   │   ├── table-skeleton.tsx      # Skeleton para tabelas ⭐
+│   │   ├── news-card-skeleton.tsx  # Skeleton para notícias ⭐
+│   │   ├── toast-container.tsx     # Container de notificações ⭐
+│   │   ├── page-header.tsx         # Cabeçalho de página reutilizável ⭐
+│   │   ├── pagination.tsx          # Paginação inteligente
+│   │   ├── separator.tsx           # Separador visual
+│   │   ├── sheet.tsx               # Sidebar mobile
+│   │   ├── table.tsx               # Tabelas responsivas
+│   │   └── tabs.tsx                # Abas e navegação
+│   └── MarketNews.tsx              # Componente de notícias
+│
+├── hooks/
+│   └── useToast.tsx                # Hook customizado para Toast ⭐
+│
+├── context/
+│   └── AuthContext.tsx             # Contexto de autenticação global
+│
+├── lib/
+│   ├── supabase/
+│   │   └── client.ts               # Cliente Supabase singleton
+│   ├── utils.ts                    # Utilitários Tailwind (cn)
+│   └── investmentHelpers.ts        # Helpers de perfil e investimento
+│
+├── services/
+│   ├── api/                        # Integrações com APIs externas
+│   │   ├── brapiService.ts         # brapi.dev - Ações e FIIs (B3)
+│   │   ├── binanceService.ts       # Binance - Criptomoedas
+│   │   ├── tesouroDiretoService.ts # Tesouro Direto - Renda Fixa
+│   │   └── investmentService.ts    # Orquestrador de serviços
+│   └── stripe/
+│       └── config.ts               # Configuração do Stripe
+│
+├── types/
+│   ├── index.ts                    # Types principais
+│   └── dividends.ts                # Types de dividendos
+│
+└── utils/
+    └── formatters.ts               # Funções de formatação (moeda, data)
 ```
 
-> **📖 Documentação Completa**: Veja [ARQUITETURA.md](./ARQUITETURA.md) para explicação detalhada
+> ⭐ = Componentes recentemente implementados com shadcn/ui
 
-## 🎨 Páginas
+---
+
+## 🎨 Páginas e Rotas
 
 ### Públicas
-- `/` - Homepage
-- `/login` - Autenticação via Firebase
+| Rota | Descrição |
+|------|-----------|
+| `/` | Redirect automático para `/dashboard` |
+| `/login` | Página de autenticação (login/registro) |
 
-### Protegidas (requer login)
-- `/dashboard` - Visão geral da carteira
-- `/investimentos` - Compra/venda de ativos
-- `/dividendos` - Projeções e histórico
-- `/planos` - Assinaturas PRO
+### Protegidas (requer autenticação)
+| Rota | Descrição | Acesso |
+|------|-----------|--------|
+| `/dashboard` | Dashboard com portfólio e dividendos | Todos |
+| `/investimentos` | Explorar e investir em ativos | Todos |
+| `/noticias` | Notícias do mercado financeiro | Todos |
+| `/perfil` | Questionário de perfil de investidor | Todos |
+| `/planos` | Comparação e checkout de planos | Todos |
+| `/contato` | Agendamento com gestora | **Somente PRO** |
 
-### Exclusivas PRO
-- `/contato` - Agendamento com gestora
+---
+
+## 🎯 Sistema de Notificações Toast
+
+Implementamos um sistema de Toast customizado **sem dependências externas**, utilizando apenas React Context API.
+
+### Como usar:
+
+```typescript
+import { useToast } from '@/hooks/useToast';
+
+function MyComponent() {
+  const { toast } = useToast();
+  
+  const handleSuccess = () => {
+    toast({
+      variant: 'success',
+      title: 'Sucesso!',
+      description: 'Investimento realizado com sucesso.'
+    });
+  };
+  
+  const handleError = () => {
+    toast({
+      variant: 'error',
+      title: 'Erro',
+      description: 'Não foi possível processar sua solicitação.'
+    });
+  };
+  
+  return <button onClick={handleSuccess}>Investir</button>;
+}
+```
+
+### Variantes disponíveis:
+- `success` - Verde (confirmações)
+- `error` - Vermelho (erros)
+- `warning` - Âmbar (avisos)
+- `default` - Cinza (informações)
+
+**Características:**
+- ⏱️ Auto-dismiss após 3 segundos
+- 📚 Suporta múltiplas notificações simultâneas
+- ✨ Animação slide-in suave
+- 🎨 Cores semânticas consistentes
+- ❌ Botão de fechar manual
+
+---
+
+## 💀 Skeleton Loaders
+
+Implementamos skeletons para melhorar a percepção de performance durante carregamentos.
+
+### Skeletons disponíveis:
+
+#### 1. Asset Card Skeleton
+```typescript
+import { AssetGridSkeleton } from '@/components/ui/asset-card-skeleton';
+
+<AssetGridSkeleton count={9} />
+```
+
+#### 2. Dashboard Card Skeleton
+```typescript
+import { DashboardCardGridSkeleton } from '@/components/ui/dashboard-card-skeleton';
+
+<DashboardCardGridSkeleton />
+```
+
+#### 3. Table Skeleton
+```typescript
+import { TableSkeleton } from '@/components/ui/table-skeleton';
+
+<TableSkeleton rows={5} columns={4} />
+```
+
+#### 4. News Card Skeleton
+```typescript
+import { NewsGridSkeleton } from '@/components/ui/news-card-skeleton';
+
+<NewsGridSkeleton count={6} />
+```
+
+**Benefícios:**
+- 🎯 Mostra a estrutura do conteúdo antes de carregar
+- ⚡ Melhor percepção de performance
+- 🎨 Visualmente agradável
+- 📱 Responsivo por padrão
+
+---
+
+## 👤 Sistema de Perfil de Investidor
+
+O sistema analisa o perfil de risco do usuário através de um questionário de 10 perguntas.
+
+### Perfis disponíveis:
+1. **Conservador** - Renda Fixa
+2. **Moderado** - Renda Fixa, Ações e FIIs
+3. **Arrojado** - Todos os ativos (incluindo Cripto)
+
+### Como funciona:
+1. Usuário responde questionário em `/perfil`
+2. Sistema calcula pontuação total
+3. Perfil é salvo no Supabase
+4. Recomendações personalizadas em `/investimentos`
+5. Filtros automáticos baseados no perfil
+
+---
+
+## 📰 Sistema de Notícias
+
+Integração com múltiplos feeds RSS do mercado financeiro brasileiro.
+
+### Fontes:
+- InfoMoney
+- Valor Econômico
+- CNN Brasil
+- E-Investidor
+
+### Características:
+- 📅 Filtro automático por data (notícias do dia)
+- 🔄 Paginação inteligente
+- 🔗 Links externos para ler notícia completa
+- ⏰ Horário de publicação
+- 🏷️ Badge da fonte
+
+---
 
 ## 🔐 Segurança
 
-- Autenticação via Firebase Auth
-- Regras de segurança no Firestore
-- Rotas protegidas por middleware
-- Validação de assinatura em tempo real
-- Webhooks seguros do Stripe
+- ✅ Autenticação via Supabase Auth (JWT)
+- ✅ Rotas protegidas com middleware
+- ✅ Validação de assinatura em tempo real
+- ✅ Webhooks seguros do Stripe (assinatura de evento)
+- ✅ Cliente Supabase singleton (evita múltiplas instâncias)
+- ✅ Variáveis de ambiente para credenciais sensíveis
 
-## 📊 APIs Utilizadas
+---
 
-- **brapi.dev** - Ações e FIIs brasileiros (B3) + Dividendos
-- **Binance API** - Criptomoedas em tempo real
-- **Tesouro Direto** - Títulos públicos (renda fixa)
+## 📊 APIs Integradas
 
-> **💡 Dica**: Configure a variável `BRAPI_API_KEY` no `.env.local` para dados completos de dividendos
+### brapi.dev
+- Cotações em tempo real de ações (B3)
+- Dados de FIIs (Fundos Imobiliários)
+- Histórico de dividendos
+- Informações fundamentalistas
+
+### Binance API
+- Cotações de criptomoedas
+- Dados em tempo real
+- Pares BRL e USDT
+
+### Tesouro Direto
+- Títulos públicos disponíveis
+- Rentabilidade e vencimentos
+- Preços atualizados
+
+---
 
 ## 🚀 Deploy
 
 ### Vercel (Recomendado)
 
 1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente
-3. Deploy automático a cada commit
+2. Configure as variáveis de ambiente no dashboard
+3. Deploy automático a cada push
 
-### Outras plataformas
+```bash
+# Deploy via CLI
+npm i -g vercel
+vercel
+```
 
-O projeto é compatível com qualquer plataforma que suporte Next.js:
-- AWS Amplify
-- Google Cloud Run
-- Railway
-- Fly.io
+### Outras Plataformas
 
-## 📝 Licença
-
-Este projeto foi desenvolvido para fins educacionais.
-
-## 🤝 Contribuindo
-
-Contribuições são bem-vindas! Sinta-se à vontade para abrir issues e pull requests.
-
-## 📚 Documentação Adicional
-
-- **[ARQUITETURA.md](./ARQUITETURA.md)** - Explicação detalhada da arquitetura e conceitos
-- **[GUIA_APRESENTACAO.md](./GUIA_APRESENTACAO.md)** - Roteiro completo para apresentação
-- **[CHANGELOG_SIMPLIFICACAO.md](./CHANGELOG_SIMPLIFICACAO.md)** - Histórico de simplificações
-- **[BRAPI_API_KEY.md](./BRAPI_API_KEY.md)** - Como obter chave da API brapi.dev
-
-## 📧 Recursos de Aprendizado
-
-- [Documentação do Next.js](https://nextjs.org/docs)
-- [Documentação do Firebase](https://firebase.google.com/docs)
-- [Documentação do Stripe](https://stripe.com/docs)
-- [Material UI Docs](https://mui.com/)
-- [brapi.dev Docs](https://brapi.dev/docs)
+O projeto é compatível com:
+- **AWS Amplify** - Suporte completo para Next.js
+- **Netlify** - Com Next.js runtime
+- **Railway** - Deploy automático
+- **Fly.io** - Containerização Docker
 
 ---
 
-**Desenvolvido para fins educacionais** 🎓
+## 🎨 Melhorias Recentes
 
-Projeto simplificado para facilitar apresentações acadêmicas mantendo todas as funcionalidades essenciais.
+### v1.1.0 - Componentes shadcn/ui
+- ✅ Implementado **Select Component** (dropdown com pesquisa)
+- ✅ Sistema de **Toast** para notificações temporárias
+- ✅ **Skeleton Loaders** para todos os loading states
+- ✅ **Page Header** reutilizável para consistência
+- ✅ **Paginação inteligente** com SmartPagination
+- ✅ Refatoração do **Layout** com Sheet e SidebarNav
+- ✅ Melhorias de **acessibilidade** (keyboard navigation, ARIA)
+- ✅ **Responsividade** aprimorada para mobile
 
+### Antes vs Depois
+
+**Loading States:**
+- ❌ Antes: Spinner genérico fullscreen
+- ✅ Depois: Skeletons que mostram estrutura do conteúdo
+
+**Notificações:**
+- ❌ Antes: Alerts estáticos que precisam ser fechados manualmente
+- ✅ Depois: Toast temporários que desaparecem automaticamente
+
+**Seleção de Horário:**
+- ❌ Antes: Grid de 7 botões (ruim em mobile)
+- ✅ Depois: Select dropdown compacto com pesquisa
+
+---
+
+## 📝 Scripts Disponíveis
+
+```bash
+# Desenvolvimento
+npm run dev          # Inicia servidor de desenvolvimento
+
+# Produção
+npm run build        # Build otimizado para produção
+npm start            # Executa build de produção
+
+# Qualidade de Código
+npm run lint         # ESLint para verificar código
+```
+
+---
+
+## 🤝 Contribuindo
+
+Contribuições são muito bem-vindas! Para contribuir:
+
+1. Fork o projeto
+2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
+3. Commit suas mudanças (`git commit -m 'feat: Adiciona MinhaFeature'`)
+4. Push para a branch (`git push origin feature/MinhaFeature`)
+5. Abra um Pull Request
+
+### Padrões de Commit
+Utilizamos [Conventional Commits](https://www.conventionalcommits.org/):
+- `feat:` - Nova funcionalidade
+- `fix:` - Correção de bug
+- `docs:` - Apenas documentação
+- `style:` - Formatação de código
+- `refactor:` - Refatoração de código
+- `test:` - Adição de testes
+- `chore:` - Tarefas de manutenção
+
+---
+
+## 📚 Documentação Adicional
+
+Consulte a pasta [`docs/`](./docs) para documentação detalhada:
+
+- **[00-INTRODUCAO-NEXTJS.md](./docs/00-INTRODUCAO-NEXTJS.md)** - Introdução ao Next.js
+- **[01-LOGIN.md](./docs/01-LOGIN.md)** - Sistema de autenticação
+- **[02-INVESTIMENTOS.md](./docs/02-INVESTIMENTOS.md)** - Página de investimentos
+- **[03-DIVIDENDOS.md](./docs/03-DIVIDENDOS.md)** - Sistema de dividendos
+- **[04-DASHBOARD.md](./docs/04-DASHBOARD.md)** - Dashboard principal
+- **[05-SETUP-PROJETO.md](./docs/05-SETUP-PROJETO.md)** - Setup completo
+- **[06-SHADCN-UI.md](./docs/06-SHADCN-UI.md)** - Guia shadcn/ui
+- **[07-FLUXO-TELAS.md](./docs/07-FLUXO-TELAS.md)** - Fluxo das telas
+
+---
+
+## 🛠️ Troubleshooting
+
+### Erro: "Supabase credentials missing"
+Verifique se as variáveis `NEXT_PUBLIC_SUPABASE_URL` e `NEXT_PUBLIC_SUPABASE_ANON_KEY` estão no `.env.local`
+
+### Erro: Stripe webhook não funciona localmente
+Use o Stripe CLI para encaminhar webhooks:
+```bash
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+### Build falha com erro de TypeScript
+```bash
+# Limpe cache e reinstale
+rm -rf .next node_modules
+npm install
+npm run build
+```
+
+---
+
+## 📄 Licença
+
+Este projeto é open-source e está disponível sob a licença MIT.
+
+---
+
+## 👨‍💻 Autor
+
+**Carlos** - Desenvolvedor Full Stack
+
+---
+
+## 🔗 Links Úteis
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Supabase Documentation](https://supabase.com/docs)
+- [shadcn/ui Documentation](https://ui.shadcn.com/)
+- [Tailwind CSS Documentation](https://tailwindcss.com/docs)
+- [Stripe Documentation](https://stripe.com/docs)
+- [brapi.dev Documentation](https://brapi.dev/docs)
+
+---
+
+<div align="center">
+
+**Desenvolvido com ❤️ usando Next.js 16 + Supabase + shadcn/ui**
+
+⭐ Se este projeto foi útil, considere dar uma estrela!
+
+</div>
