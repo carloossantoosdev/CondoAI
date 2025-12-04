@@ -39,9 +39,13 @@ export function SidebarNav({ menuItems, onNavigate }: SidebarNavProps) {
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-100">
+        <div className="flex items-center gap-2">
+        <img src="/logo-financas-pro.svg" alt="Finanças Pro" width={32} height={32} />
         <h1 className="text-xl font-bold !bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] bg-clip-text text-transparent">
-          💰 Finanças Pro
+          Finanças Pro
         </h1>
+        </div>
+    
       </div>
 
       {/* Navigation */}
