@@ -109,9 +109,11 @@ export default function LoginPage() {
         </CardHeader>
         <CardContent className="space-y-6 pb-8">
           {error && (
-            <Alert variant="destructive" className="border-red-200">
-              <AlertCircle className="h-4 w-4" />
-              <div className="ml-2 text-sm">{error}</div>
+            <Alert variant="destructive" className="text-red-500 bg-red-50">
+              <div className="flex items-center gap-2">
+                <AlertCircle className="h-4 w-4" />
+                <span className="text-sm">{error}</span>
+              </div>
             </Alert>
           )}
 
