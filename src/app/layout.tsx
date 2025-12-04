@@ -1,8 +1,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import { AuthProvider } from '@/context/AuthContext';
-import { ToastProvider } from '@/hooks/useToast';
-import { ToastContainer } from '@/components/ui/toast-container';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import './globals.css';
 
 const inter = Inter({ subsets: ['latin'] });
@@ -47,10 +47,19 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <AuthProvider>
-          <ToastProvider>
-            {children}
-            <ToastContainer />
-          </ToastProvider>
+          {children}
+          <ToastContainer
+            position="top-right"
+            autoClose={3000}
+            hideProgressBar={false}
+            newestOnTop
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="light"
+          />
         </AuthProvider>
         <script
           dangerouslySetInnerHTML={{

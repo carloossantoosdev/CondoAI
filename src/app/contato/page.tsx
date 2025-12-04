@@ -13,10 +13,9 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
 import { PageHeader } from '@/components/ui/page-header';
-import { useToast } from '@/hooks/useToast';
+import { toast } from 'react-toastify';
 import { 
   Select, 
   SelectContent, 
@@ -24,8 +23,7 @@ import {
   SelectTrigger, 
   SelectValue 
 } from '@/components/ui/select';
-import { Send, CheckCircle2, Loader2, Info, LightbulbIcon, Sparkles } from 'lucide-react';
-import { cn } from '@/lib/utils';
+import { Send, Loader2, LightbulbIcon, Sparkles } from 'lucide-react';
 
 // Criar instância única do cliente Supabase
 const supabaseClient = createClient();
@@ -40,7 +38,6 @@ const AVAILABLE_TIMES = [
 export default function ContactPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Value>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [message, setMessage] = useState('');
@@ -108,11 +105,7 @@ export default function ContactPage() {
     e.preventDefault();
 
     if (!user || !selectedDate || !selectedTime || !message.trim()) {
-      toast({
-        variant: 'warning',
-        title: 'Campos obrigatórios',
-        description: 'Por favor, preencha todos os campos antes de enviar.'
-      });
+      toast.warning('Por favor, preencha todos os campos antes de enviar.');
       return;
     }
 
@@ -137,19 +130,11 @@ export default function ContactPage() {
 
       if (error) {
         console.error('Erro ao criar agendamento:', error);
-        toast({
-          variant: 'error',
-          title: 'Erro ao enviar',
-          description: 'Não foi possível enviar sua solicitação. Tente novamente.'
-        });
+        toast.error('Não foi possível enviar sua solicitação. Tente novamente.');
         return;
       }
 
-      toast({
-        variant: 'success',
-        title: 'Agendamento enviado!',
-        description: 'A gestora entrará em contato em breve.'
-      });
+      toast.success('Agendamento enviado! A gestora entrará em contato em breve.');
       
       setMessage('');
       setPhone('');

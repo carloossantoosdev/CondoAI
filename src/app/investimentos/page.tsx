@@ -34,7 +34,7 @@ import { Loading } from '@/components/ui/loading';
 import { SmartPagination } from '@/components/ui/pagination';
 import { PageHeader } from '@/components/ui/page-header';
 import { AssetGridSkeleton } from '@/components/ui/asset-card-skeleton';
-import { useToast } from '@/hooks/useToast';
+import { toast } from 'react-toastify';
 import { cn } from '@/lib/utils';
 
 // Criar instância única do cliente Supabase
@@ -43,7 +43,6 @@ const supabaseClient = createClient();
 export default function InvestmentPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
-  const { toast } = useToast();
   const [currentTab, setCurrentTab] = useState<InvestmentType>('rendaFixa');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
@@ -130,20 +129,12 @@ export default function InvestmentPage() {
         return;
       }
 
-      toast({
-        variant: 'success',
-        title: 'Investimento realizado!',
-        description: `${quantidade} ${quantidade > 1 ? 'cotas' : 'cota'} de ${selectedAsset.ticker} adicionadas ao seu portfólio.`
-      });
+      toast.success(`Investimento realizado! ${quantidade} ${quantidade > 1 ? 'cotas' : 'cota'} de ${selectedAsset.ticker} adicionadas.`);
       
       handleCloseModal();
     } catch (error: any) {
       console.error('Erro ao investir:', error);
-      toast({
-        variant: 'error',
-        title: 'Erro ao investir',
-        description: 'Não foi possível realizar o investimento. Tente novamente.'
-      });
+      toast.error('Não foi possível realizar o investimento. Tente novamente.');
     } finally {
       setInvesting(false);
     }
@@ -457,17 +448,17 @@ export default function InvestmentPage() {
           <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-white w-[95vw] sm:w-full">
             <DialogHeader className="space-y-2 sm:space-y-3">
               <div className="flex items-center gap-2 sm:gap-3">
-                <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-blue-200">
+                <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-orange-200">
                   {selectedAsset?.logo ? (
                     <AvatarImage src={selectedAsset.logo} alt={selectedAsset.ticker} />
                   ) : (
-                    <AvatarFallback className="bg-gradient-to-br from-blue-500 to-indigo-600 text-white font-bold text-sm">
+                    <AvatarFallback className="bg-gradient-to-br from-[#ff6b2d] to-[#b91c1c] text-white font-bold text-sm">
                       {selectedAsset?.ticker.substring(0, 2)}
                     </AvatarFallback>
                   )}
                 </Avatar>
                 <div className="flex-1 min-w-0">
-                  <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent truncate">
+                  <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-[#ff6b2d] to-[#b91c1c] bg-clip-text text-transparent truncate">
                     {selectedAsset?.ticker}
                   </DialogTitle>
                   <DialogDescription className="text-xs sm:text-sm md:text-base text-slate-600 line-clamp-1">
@@ -480,12 +471,12 @@ export default function InvestmentPage() {
             {selectedAsset && (
               <div className="space-y-4 sm:space-y-5 py-3 sm:py-4">
                 {/* Preço Atual - Destaque */}
-                <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-sm">
+                <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 shadow-sm">
                   <CardContent className="p-3 sm:p-4 md:p-5">
                     <div className="flex items-center justify-between gap-2">
                       <div>
-                        <span className="text-[10px] sm:text-xs font-medium text-blue-600 block mb-1 uppercase tracking-wide">
-                          💰 Preço Atual
+                        <span className="text-[10px] sm:text-xs font-medium text-orange-600 block mb-1 uppercase tracking-wide">
+                          Preço Atual
                         </span>
                         <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
                           {formatCurrency(selectedAsset.preco)}
@@ -511,7 +502,7 @@ export default function InvestmentPage() {
                 {/* Quantidade */}
                 <div className="space-y-2 sm:space-y-3">
                   <Label htmlFor="quantidade" className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-2">
-                    📊 Quantidade
+                    Quantidade
                   </Label>
                   <div className="relative">
                     <Input
@@ -520,10 +511,10 @@ export default function InvestmentPage() {
                       min="1"
                       value={quantidade}
                       onChange={(e) => setQuantidade(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="text-lg sm:text-xl font-semibold h-12 sm:h-14 pl-3 sm:pl-4 pr-10 sm:pr-12 border-2 border-blue-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
+                      className="text-lg sm:text-xl font-semibold h-12 sm:h-14 pl-3 sm:pl-4 pr-10 sm:pr-12 border-2 border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
                       placeholder="1"
                     />
-                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-blue-400 text-xs sm:text-sm font-medium">
+                    <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-orange-500 text-xs sm:text-sm font-medium">
                       {quantidade > 1 ? 'cotas' : 'cota'}
                     </div>
                   </div>
@@ -533,7 +524,7 @@ export default function InvestmentPage() {
                 </div>
 
                 {/* Resumo do Investimento */}
-                <Card className="bg-gradient-to-br from-emerald-500 to-teal-600 border-0 text-white shadow-lg">
+                <Card className="bg-gradient-to-br from-[#ff6b2d] to-[#b91c1c] border-0 text-white shadow-lg">
                   <CardContent className="p-4 sm:p-5 md:p-6">
                     <div className="flex items-center justify-between mb-2 sm:mb-3 gap-2">
                       <span className="text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
@@ -567,7 +558,7 @@ export default function InvestmentPage() {
               <Button
                 onClick={handleInvest}
                 disabled={investing}
-                className="w-full sm:flex-1 gap-1.5 sm:gap-2 h-10 sm:h-12 text-sm sm:text-base bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-semibold shadow-lg"
+                className="w-full sm:flex-1 gap-1.5 sm:gap-2 h-10 sm:h-12 text-sm sm:text-base bg-gradient-to-r from-[#ff6b2d] to-[#b91c1c] hover:from-[#ff6b2d]/90 hover:to-[#b91c1c]/90 text-white font-semibold shadow-lg"
               >
                 {investing ? (
                   <>
@@ -576,7 +567,7 @@ export default function InvestmentPage() {
                   </>
                 ) : (
                   <>
-                    <span className="hidden sm:inline">Confirmar Investimento</span>
+                    <span className="hidden sm:inline">Confirmar</span>
                     <span className="sm:hidden">Confirmar</span>
                   </>
                 )}
