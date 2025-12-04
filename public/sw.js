@@ -1,5 +1,6 @@
 // Service Worker Minimalista - Apenas para permitir instalação PWA
 // Sem cache offline - apenas o necessário para ser um PWA válido
+const CACHE_VERSION = 'v2'; // Atualizado para forçar nova instalação
 
 self.addEventListener('install', (event) => {
   console.log('Service Worker instalado - PWA pronto para instalação');
@@ -7,8 +8,17 @@ self.addEventListener('install', (event) => {
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('Service Worker ativado');
-  event.waitUntil(self.clients.claim());
+  console.log('Service Worker ativado - Limpando caches antigos');
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cacheName) => {
+          console.log('Deletando cache:', cacheName);
+          return caches.delete(cacheName);
+        })
+      );
+    }).then(() => self.clients.claim())
+  );
 });
 
 // Fetch simples - sempre busca da rede (sem cache)

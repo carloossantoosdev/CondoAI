@@ -18,6 +18,7 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
+      { url: '/logo-financas-pro.png', type: 'image/png' },
       { url: '/logo-financas-pro.svg', type: 'image/svg+xml' },
       { url: '/icon-192x192.png', sizes: '192x192', type: 'image/png' }
     ],
@@ -41,6 +42,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR">
       <head>
+        <link rel="icon" type="image/png" href="/logo-financas-pro.png" />
         <link rel="icon" type="image/svg+xml" href="/logo-financas-pro.svg" />
         <link rel="alternate icon" type="image/png" href="/icon-192x192.png" />
         <link rel="manifest" href="/manifest.json" />
