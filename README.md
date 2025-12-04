@@ -80,7 +80,7 @@ Uma plataforma moderna de investimentos construída com Next.js 16, Supabase e s
 
 ### 1. Clone o Repositório
 ```bash
-git clone https://github.com/seu-usuario/financas-pro.git
+git clone https://github.com/carloossantoosdev/CondoAI.git
 cd financas-pro
 ```
 
@@ -290,95 +290,6 @@ src/
 
 ---
 
-## 🎯 Sistema de Notificações Toast
-
-Implementamos um sistema de Toast customizado **sem dependências externas**, utilizando apenas React Context API.
-
-### Como usar:
-
-```typescript
-import { useToast } from '@/hooks/useToast';
-
-function MyComponent() {
-  const { toast } = useToast();
-  
-  const handleSuccess = () => {
-    toast({
-      variant: 'success',
-      title: 'Sucesso!',
-      description: 'Investimento realizado com sucesso.'
-    });
-  };
-  
-  const handleError = () => {
-    toast({
-      variant: 'error',
-      title: 'Erro',
-      description: 'Não foi possível processar sua solicitação.'
-    });
-  };
-  
-  return <button onClick={handleSuccess}>Investir</button>;
-}
-```
-
-### Variantes disponíveis:
-- `success` - Verde (confirmações)
-- `error` - Vermelho (erros)
-- `warning` - Âmbar (avisos)
-- `default` - Cinza (informações)
-
-**Características:**
-- ⏱️ Auto-dismiss após 3 segundos
-- 📚 Suporta múltiplas notificações simultâneas
-- ✨ Animação slide-in suave
-- 🎨 Cores semânticas consistentes
-- ❌ Botão de fechar manual
-
----
-
-## 💀 Skeleton Loaders
-
-Implementamos skeletons para melhorar a percepção de performance durante carregamentos.
-
-### Skeletons disponíveis:
-
-#### 1. Asset Card Skeleton
-```typescript
-import { AssetGridSkeleton } from '@/components/ui/asset-card-skeleton';
-
-<AssetGridSkeleton count={9} />
-```
-
-#### 2. Dashboard Card Skeleton
-```typescript
-import { DashboardCardGridSkeleton } from '@/components/ui/dashboard-card-skeleton';
-
-<DashboardCardGridSkeleton />
-```
-
-#### 3. Table Skeleton
-```typescript
-import { TableSkeleton } from '@/components/ui/table-skeleton';
-
-<TableSkeleton rows={5} columns={4} />
-```
-
-#### 4. News Card Skeleton
-```typescript
-import { NewsGridSkeleton } from '@/components/ui/news-card-skeleton';
-
-<NewsGridSkeleton count={6} />
-```
-
-**Benefícios:**
-- 🎯 Mostra a estrutura do conteúdo antes de carregar
-- ⚡ Melhor percepção de performance
-- 🎨 Visualmente agradável
-- 📱 Responsivo por padrão
-
----
-
 ## 👤 Sistema de Perfil de Investidor
 
 O sistema analisa o perfil de risco do usuário através de um questionário de 10 perguntas.
@@ -447,111 +358,6 @@ Integração com múltiplos feeds RSS do mercado financeiro brasileiro.
 
 ---
 
-## 🚀 Deploy
-
-### Vercel (Recomendado)
-
-1. Conecte seu repositório ao Vercel
-2. Configure as variáveis de ambiente no dashboard
-3. Deploy automático a cada push
-
-```bash
-# Deploy via CLI
-npm i -g vercel
-vercel
-```
-
-### Outras Plataformas
-
-O projeto é compatível com:
-- **AWS Amplify** - Suporte completo para Next.js
-- **Netlify** - Com Next.js runtime
-- **Railway** - Deploy automático
-- **Fly.io** - Containerização Docker
-
----
-
-## 🎨 Melhorias Recentes
-
-### v1.1.0 - Componentes shadcn/ui
-- ✅ Implementado **Select Component** (dropdown com pesquisa)
-- ✅ Sistema de **Toast** para notificações temporárias
-- ✅ **Skeleton Loaders** para todos os loading states
-- ✅ **Page Header** reutilizável para consistência
-- ✅ **Paginação inteligente** com SmartPagination
-- ✅ Refatoração do **Layout** com Sheet e SidebarNav
-- ✅ Melhorias de **acessibilidade** (keyboard navigation, ARIA)
-- ✅ **Responsividade** aprimorada para mobile
-
-### Antes vs Depois
-
-**Loading States:**
-- ❌ Antes: Spinner genérico fullscreen
-- ✅ Depois: Skeletons que mostram estrutura do conteúdo
-
-**Notificações:**
-- ❌ Antes: Alerts estáticos que precisam ser fechados manualmente
-- ✅ Depois: Toast temporários que desaparecem automaticamente
-
-**Seleção de Horário:**
-- ❌ Antes: Grid de 7 botões (ruim em mobile)
-- ✅ Depois: Select dropdown compacto com pesquisa
-
----
-
-## 📝 Scripts Disponíveis
-
-```bash
-# Desenvolvimento
-npm run dev          # Inicia servidor de desenvolvimento
-
-# Produção
-npm run build        # Build otimizado para produção
-npm start            # Executa build de produção
-
-# Qualidade de Código
-npm run lint         # ESLint para verificar código
-```
-
----
-
-## 🤝 Contribuindo
-
-Contribuições são muito bem-vindas! Para contribuir:
-
-1. Fork o projeto
-2. Crie uma branch para sua feature (`git checkout -b feature/MinhaFeature`)
-3. Commit suas mudanças (`git commit -m 'feat: Adiciona MinhaFeature'`)
-4. Push para a branch (`git push origin feature/MinhaFeature`)
-5. Abra um Pull Request
-
-### Padrões de Commit
-Utilizamos [Conventional Commits](https://www.conventionalcommits.org/):
-- `feat:` - Nova funcionalidade
-- `fix:` - Correção de bug
-- `docs:` - Apenas documentação
-- `style:` - Formatação de código
-- `refactor:` - Refatoração de código
-- `test:` - Adição de testes
-- `chore:` - Tarefas de manutenção
-
----
-
-## 📚 Documentação Adicional
-
-Consulte a pasta [`docs/`](./docs) para documentação detalhada:
-
-- **[00-INTRODUCAO-NEXTJS.md](./docs/00-INTRODUCAO-NEXTJS.md)** - Introdução ao Next.js
-- **[01-LOGIN.md](./docs/01-LOGIN.md)** - Sistema de autenticação
-- **[02-INVESTIMENTOS.md](./docs/02-INVESTIMENTOS.md)** - Página de investimentos
-- **[03-DIVIDENDOS.md](./docs/03-DIVIDENDOS.md)** - Sistema de dividendos
-- **[04-DASHBOARD.md](./docs/04-DASHBOARD.md)** - Dashboard principal
-- **[05-SETUP-PROJETO.md](./docs/05-SETUP-PROJETO.md)** - Setup completo
-- **[06-SHADCN-UI.md](./docs/06-SHADCN-UI.md)** - Guia shadcn/ui
-- **[07-FLUXO-TELAS.md](./docs/07-FLUXO-TELAS.md)** - Fluxo das telas
-
----
-
 ## 🛠️ Troubleshooting
 
 ### Erro: "Supabase credentials missing"
@@ -579,9 +385,9 @@ Este projeto é open-source e está disponível sob a licença MIT.
 
 ---
 
-## 👨‍💻 Autor
+## 👨‍💻 Autores
 
-**Carlos** - Desenvolvedor Full Stack
+<!-- **Carlos** - Desenvolvedor Front-end -->
 
 ---
 
