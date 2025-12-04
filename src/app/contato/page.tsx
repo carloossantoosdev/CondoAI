@@ -16,6 +16,14 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Loading } from '@/components/ui/loading';
 import { PageHeader } from '@/components/ui/page-header';
+import { useToast } from '@/hooks/useToast';
+import { 
+  Select, 
+  SelectContent, 
+  SelectItem, 
+  SelectTrigger, 
+  SelectValue 
+} from '@/components/ui/select';
 import { Send, CheckCircle2, Loader2, Info, LightbulbIcon, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -32,12 +40,12 @@ const AVAILABLE_TIMES = [
 export default function ContactPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [selectedDate, setSelectedDate] = useState<Value>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
   const [message, setMessage] = useState('');
   const [phone, setPhone] = useState('');
   const [submitting, setSubmitting] = useState(false);
-  const [success, setSuccess] = useState(false);
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
   const hasLoadedRef = useRef(false);
@@ -100,7 +108,11 @@ export default function ContactPage() {
     e.preventDefault();
 
     if (!user || !selectedDate || !selectedTime || !message.trim()) {
-      alert('Por favor, preencha todos os campos');
+      toast({
+        variant: 'warning',
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha todos os campos antes de enviar.'
+      });
       return;
     }
 
@@ -125,18 +137,25 @@ export default function ContactPage() {
 
       if (error) {
         console.error('Erro ao criar agendamento:', error);
-        alert('Erro ao enviar solicitação. Tente novamente.');
+        toast({
+          variant: 'error',
+          title: 'Erro ao enviar',
+          description: 'Não foi possível enviar sua solicitação. Tente novamente.'
+        });
         return;
       }
 
-      setSuccess(true);
+      toast({
+        variant: 'success',
+        title: 'Agendamento enviado!',
+        description: 'A gestora entrará em contato em breve.'
+      });
+      
       setMessage('');
       setPhone('');
       setSelectedTime('');
       
       await loadAppointments();
-     
-      setSuccess(false);
      
     } catch (error) {
       console.error('Erro ao enviar solicitação:', error);
@@ -208,15 +227,6 @@ export default function ContactPage() {
           icon="📞"
         />
 
-        {success && (
-          <Alert variant="success" className="border-green-200">
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertDescription>
-              Solicitação enviada com sucesso! A gestora entrará em contato em breve.
-            </AlertDescription>
-          </Alert>
-        )}
-
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Formulário de Agendamento */}
           <div className="lg:col-span-2">
@@ -244,22 +254,21 @@ export default function ContactPage() {
 
                   {/* Horários */}
                   <div>
-                    <Label className="text-base font-semibold mb-3 block">
+                    <Label htmlFor="time-select" className="text-base font-semibold mb-3 block">
                       Selecione o Horário
                     </Label>
-                    <div className="grid grid-cols-4 gap-2">
-                      {AVAILABLE_TIMES.map((time) => (
-                        <Button
-                          key={time}
-                          type="button"
-                          variant={selectedTime === time ? "default" : "outline"}
-                          onClick={() => setSelectedTime(time)}
-                          className="font-semibold"
-                        >
-                          {time}
-                        </Button>
-                      ))}
-                    </div>
+                    <Select value={selectedTime} onValueChange={setSelectedTime}>
+                      <SelectTrigger id="time-select" className="w-full h-12 text-base">
+                        <SelectValue placeholder="Escolha um horário disponível" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {AVAILABLE_TIMES.map((time) => (
+                          <SelectItem key={time} value={time} className="text-base">
+                            🕐 {time}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   {/* Telefone */}

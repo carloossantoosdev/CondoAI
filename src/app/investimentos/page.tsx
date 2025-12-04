@@ -33,6 +33,8 @@ import {
 import { Loading } from '@/components/ui/loading';
 import { SmartPagination } from '@/components/ui/pagination';
 import { PageHeader } from '@/components/ui/page-header';
+import { AssetGridSkeleton } from '@/components/ui/asset-card-skeleton';
+import { useToast } from '@/hooks/useToast';
 import { cn } from '@/lib/utils';
 
 // Criar instância única do cliente Supabase
@@ -41,6 +43,7 @@ const supabaseClient = createClient();
 export default function InvestmentPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const { toast } = useToast();
   const [currentTab, setCurrentTab] = useState<InvestmentType>('rendaFixa');
   const [assets, setAssets] = useState<Asset[]>([]);
   const [loadingAssets, setLoadingAssets] = useState(true);
@@ -48,7 +51,6 @@ export default function InvestmentPage() {
   const [quantidade, setQuantidade] = useState<number>(1);
   const [modalOpen, setModalOpen] = useState(false);
   const [investing, setInvesting] = useState(false);
-  const [successMessage, setSuccessMessage] = useState('');
   const [page, setPage] = useState(1);
   const [serverTotalPages, setServerTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
@@ -128,14 +130,20 @@ export default function InvestmentPage() {
         return;
       }
 
-      setSuccessMessage(`Investimento em ${selectedAsset.ticker} realizado com sucesso!`);
-      handleCloseModal();
+      toast({
+        variant: 'success',
+        title: 'Investimento realizado!',
+        description: `${quantidade} ${quantidade > 1 ? 'cotas' : 'cota'} de ${selectedAsset.ticker} adicionadas ao seu portfólio.`
+      });
       
-      // Limpar mensagem após 5 segundos
-      setTimeout(() => setSuccessMessage(''), 5000);
+      handleCloseModal();
     } catch (error: any) {
       console.error('Erro ao investir:', error);
-      alert('Erro ao realizar investimento. Tente novamente.');
+      toast({
+        variant: 'error',
+        title: 'Erro ao investir',
+        description: 'Não foi possível realizar o investimento. Tente novamente.'
+      });
     } finally {
       setInvesting(false);
     }
@@ -200,13 +208,6 @@ export default function InvestmentPage() {
           description="Descubra as melhores oportunidades de investimento para seu perfil"
           icon="📊"
         />
-
-        {successMessage && (
-          <Alert variant="success" className="border-green-200">
-            <CheckCircle2 className="h-4 w-4" />
-            <AlertDescription>{successMessage}</AlertDescription>
-          </Alert>
-        )}
 
         {/* Banner de Incentivo - Perfil Não Definido */}
         {!user?.riskProfile && (
@@ -351,7 +352,7 @@ export default function InvestmentPage() {
 
         {/* Assets Grid */}
         {loadingAssets ? (
-          <Loading size="lg" fullscreen />
+          <AssetGridSkeleton count={itemsPerPage} />
         ) : (
           <>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">

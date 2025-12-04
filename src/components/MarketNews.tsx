@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Badge } from '@/components/ui/badge';
 import { Loading } from '@/components/ui/loading';
+import { NewsGridSkeleton } from '@/components/ui/news-card-skeleton';
 import { ExternalLink, Newspaper } from 'lucide-react';
 import { SmartPagination } from '@/components/ui/pagination';
 
@@ -62,7 +63,7 @@ export default function MarketNews() {
   return (
     <>
         {loading ? (
-          <Loading size="lg" fullscreen />
+          <NewsGridSkeleton count={pagination.itemsPerPage} />
         ) : news.length > 0 ? (
           <div className="space-y-6">
             {/* Lista de notícias */}

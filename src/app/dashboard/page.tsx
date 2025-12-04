@@ -11,6 +11,7 @@ import { Loading } from '@/components/ui/loading';
 import { PageHeader } from '@/components/ui/page-header';
 import { PortfolioSummaryComponent } from '@/components/dashboard/PortfolioSummary';
 import { DividendsSection } from '@/components/dashboard/DividendsSection';
+import { DashboardCardGridSkeleton, DashboardChartSkeleton } from '@/components/ui/dashboard-card-skeleton';
 
 const supabaseClient = createClient();
 
@@ -228,7 +229,10 @@ export default function DashboardPage() {
         />
 
         {loadingData ? (
-          <Loading size="lg" fullscreen />
+          <>
+            <DashboardCardGridSkeleton />
+            <DashboardChartSkeleton />
+          </>
         ) : (
           <>
             {/* Componente de Resumo da Carteira */}

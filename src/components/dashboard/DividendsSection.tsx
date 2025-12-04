@@ -6,6 +6,8 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Loading } from '@/components/ui/loading';
+import { DashboardCardGridSkeleton } from '@/components/ui/dashboard-card-skeleton';
+import { TableSkeleton } from '@/components/ui/table-skeleton';
 import {
   Table,
   TableBody,
@@ -68,7 +70,10 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
       )}
 
       {loading ? (
-        <Loading size="md" />
+        <>
+          <DashboardCardGridSkeleton />
+          <TableSkeleton rows={5} columns={5} />
+        </>
       ) : assets.length === 0 ? (
         <Alert>
           <Info className="h-4 w-4" />
