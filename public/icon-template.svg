@@ -1,0 +1,16 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Gradiente de fundo -->
+  <defs>
+    <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff6b2d;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#b91c1c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Fundo com gradiente -->
+  <rect width="512" height="512" rx="80" fill="url(#grad1)"/>
+  
+  <!-- Emoji/Ícone (centralize um emoji 💰 aqui ou use o texto) -->
+  <text x="256" y="320" font-size="220" text-anchor="middle" fill="white">💰</text>
+</svg>
+
