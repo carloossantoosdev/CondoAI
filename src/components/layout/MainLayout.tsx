@@ -36,10 +36,10 @@ export default function MainLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname();
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="min-h-screen bg-[var(--background)]">
       {/* Sidebar Desktop */}
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-64 lg:flex-col">
-        <div className="flex h-full flex-col border-r border-slate-200 bg-white">
+        <div className="flex h-full flex-col border-r border-[var(--border)] bg-[var(--sidebar)]">
           <SidebarNav menuItems={menuItems} />
         </div>
       </aside>
@@ -55,7 +55,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       {/* Main Content */}
       <div className="lg:pl-64">
         {/* Top Bar Mobile */}
-        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-slate-200 bg-white px-4 shadow-sm lg:hidden">
+        <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-[var(--border)] bg-[var(--card)] px-4 shadow-sm lg:hidden">
           <Button
             variant="ghost"
             size="icon"
@@ -65,7 +65,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
             <Menu className="h-6 w-6" />
           </Button>
           <div className="flex-1">
-            <h2 className="text-sm font-semibold text-slate-900">
+            <h2 className="text-sm font-semibold text-[var(--foreground)]">
               {menuItems.find(item => item.path === pathname)?.text || 'Finanças Pro'}
             </h2>
           </div>

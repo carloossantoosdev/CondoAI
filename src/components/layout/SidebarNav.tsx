@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+import { ThemeToggle } from '@/components/ui/theme-toggle';
 import { cn } from '@/lib/utils';
 
 interface MenuItem {
@@ -36,16 +37,16 @@ export function SidebarNav({ menuItems, onNavigate }: SidebarNavProps) {
   };
 
   return (
-    <div className="flex h-full flex-col">
+    <div className="flex h-full flex-col bg-[var(--sidebar)] text-[var(--sidebar-foreground)]">
       {/* Logo */}
-      <div className="flex h-16 shrink-0 items-center px-6 border-b border-slate-100">
+      <div className="flex h-16 shrink-0 items-center justify-between px-6 border-b border-[var(--border)]">
         <div className="flex items-center gap-2">
-        <img src="/logo-financas-pro.svg" alt="Finanças Pro" width={32} height={32} />
-        <h1 className="text-xl font-bold !bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] bg-clip-text text-transparent">
-          Finanças Pro
-        </h1>
+          <img src="/logo-financas-pro.svg" alt="Finanças Pro" width={32} height={32} />
+          <h1 className="text-xl font-bold bg-linear-to-r! from-[#ff6b2d]! to-[#b91c1c]! bg-clip-text text-transparent">
+            Finanças Pro
+          </h1>
         </div>
-    
+        <ThemeToggle />
       </div>
 
       {/* Navigation */}
@@ -63,8 +64,8 @@ export function SidebarNav({ menuItems, onNavigate }: SidebarNavProps) {
                   className={cn(
                     'group flex w-full gap-x-3 rounded-lg p-3 text-sm font-semibold transition-all',
                     isActive
-                      ? '!bg-gradient-to-r !from-[#ff6b2d] !to-[#b91c1c] text-white shadow-md'
-                      : 'text-slate-700 hover:bg-orange-50 hover:text-[#ff6b2d]',
+                      ? 'bg-linear-to-r! from-[#ff6b2d]! to-[#b91c1c]! text-white shadow-md'
+                      : 'text-[var(--sidebar-foreground)] hover:bg-[var(--secondary)] hover:text-[#ff6b2d]',
                     isDisabled && 'opacity-50 cursor-not-allowed'
                   )}
                 >
@@ -87,15 +88,15 @@ export function SidebarNav({ menuItems, onNavigate }: SidebarNavProps) {
 
       {/* User Section */}
       <div className="p-6">
-        <div className="flex items-center gap-x-3 p-3 rounded-lg bg-slate-50">
+        <div className="flex items-center gap-x-3 p-3 rounded-lg bg-[var(--secondary)]">
           <Avatar className="h-10 w-10">
             <AvatarImage src={user?.photoURL || ''} alt={user?.displayName || 'Usuário'} />
-            <AvatarFallback className="!bg-gradient-to-br !from-[#ff6b2d] !to-[#b91c1c] text-white font-semibold">
+            <AvatarFallback className="bg-linear-to-br! from-[#ff6b2d]! to-[#b91c1c]! text-white font-semibold">
               {user?.displayName?.charAt(0) || 'U'}
             </AvatarFallback>
           </Avatar>
           <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-slate-900 truncate">
+            <p className="text-sm font-semibold text-[var(--foreground)] truncate">
               {user?.displayName || 'Usuário'}
             </p>
             <Badge 
@@ -109,7 +110,7 @@ export function SidebarNav({ menuItems, onNavigate }: SidebarNavProps) {
             variant="ghost"
             size="icon"
             onClick={handleLogout}
-            className="h-8 w-8 text-slate-500 hover:text-[#ff6b2d]"
+            className="h-8 w-8 text-[var(--muted-foreground)] hover:text-[#ff6b2d]"
           >
             <LogOut className="h-4 w-4" />
           </Button>

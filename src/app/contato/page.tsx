@@ -174,14 +174,14 @@ export default function ContactPage() {
               </div>
 
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-3">
+                <h2 className="text-2xl font-bold text-[var(--foreground)] mb-3">
                   Recurso Exclusivo PRO 🌟
                 </h2>
                 <p className="text-slate-700 mb-4">
                   O contato direto com nossa gestora financeira e agendamento de reuniões 
                   é um recurso exclusivo para assinantes do <strong>Plano PRO</strong>.
                 </p>
-                <p className="text-slate-600 text-sm">
+                <p className="text-[var(--muted-foreground)] text-sm">
                   Faça upgrade agora e tenha acesso a consultoria especializada, 
                   agendamento de reuniões e suporte prioritário!
                 </p>
@@ -317,16 +317,16 @@ export default function ContactPage() {
                 {loadingAppointments ? (
                   <Loading size="md" />
                 ) : appointments.length === 0 ? (
-                  <p className="text-sm text-slate-600 text-center py-8">
+                  <p className="text-sm text-[var(--muted-foreground)] text-center py-8">
                     Você ainda não tem agendamentos
                   </p>
                 ) : (
                   <div className="space-y-3">
                     {appointments.map((appointment) => (
-                      <Card key={appointment.id} className="bg-slate-50">
+                      <Card key={appointment.id} className="bg-[var(--secondary)]">
                         <CardContent className="p-4">
                           <div className="flex justify-between items-start mb-2">
-                            <span className="font-semibold text-slate-900">
+                            <span className="font-semibold text-[var(--foreground)]">
                               {appointment.date}
                             </span>
                             <Badge
@@ -341,10 +341,10 @@ export default function ContactPage() {
                                'Cancelado'}
                             </Badge>
                           </div>
-                          <p className="text-sm text-slate-600 mb-2">
+                          <p className="text-sm text-[var(--muted-foreground)] mb-2">
                             Horário: {appointment.time}
                           </p>
-                          <p className="text-sm text-slate-600 line-clamp-2">
+                          <p className="text-sm text-[var(--muted-foreground)] line-clamp-2">
                             {appointment.message}
                           </p>
                         </CardContent>

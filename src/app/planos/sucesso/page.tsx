@@ -78,10 +78,10 @@ function SuccessContent() {
           <Card className="max-w-md w-full">
             <CardContent className="p-12 text-center">
               <Loading size="lg" />
-              <p className="mt-4 text-lg font-semibold text-slate-900">
+              <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
                 {error ? error : 'Verificando pagamento...'}
               </p>
-              <p className="text-sm text-slate-600 mt-2">
+              <p className="text-sm text-[var(--muted-foreground)] mt-2">
                 {error ? 'Redirecionando...' : 'Aguarde enquanto confirmamos sua assinatura'}
               </p>
             </CardContent>
@@ -105,7 +105,7 @@ function SuccessContent() {
 
             {/* Título */}
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
+              <h1 className="text-3xl font-bold text-[var(--foreground)] mb-2 flex items-center justify-center gap-2">
                 Pagamento Confirmado!
                 <Sparkles className="w-8 h-8 text-orange-500" />
               </h1>
@@ -119,7 +119,7 @@ function SuccessContent() {
               <p className="text-slate-700">
                 <strong>Parabéns!</strong> Agora você tem acesso a todos os recursos premium:
               </p>
-              <ul className="space-y-2 text-sm text-slate-600">
+              <ul className="space-y-2 text-sm text-[var(--muted-foreground)]">
                 <li className="flex items-center gap-2">
                   <CheckCircle2 className="w-4 h-4 text-green-600" />
                   Investimentos ilimitados
@@ -170,7 +170,7 @@ export default function SuccessPage() {
           <Card className="max-w-md w-full">
             <CardContent className="p-12 text-center">
               <Loading size="lg" />
-              <p className="mt-4 text-lg font-semibold text-slate-900">
+              <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
                 Carregando...
               </p>
             </CardContent>

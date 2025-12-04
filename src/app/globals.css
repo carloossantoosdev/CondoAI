@@ -1,8 +1,56 @@
 @import "tailwindcss";
 
+/* Variáveis do tema - Light Mode (padrão) */
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --primary: #ff6b2d;
+  --primary-foreground: #ffffff;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #171717;
+  --border: #e5e7eb;
+  --input: #e5e7eb;
+  --ring: #ff6b2d;
+  --sidebar: #ffffff;
+  --sidebar-foreground: #171717;
+}
+
+/* Dark Mode - Baseado no Figma */
+[data-theme="dark"] {
+  --background: #0a0a0a;
+  --foreground: #ededed;
+  --card: #1a1a1a;
+  --card-foreground: #ededed;
+  --primary: #ff6b2d;
+  --primary-foreground: #ffffff;
+  --secondary: #1f1f1f;
+  --secondary-foreground: #ededed;
+  --muted: #262626;
+  --muted-foreground: #a3a3a3;
+  --accent: #8B0000;
+  --accent-foreground: #ededed;
+  --border: #2a2a2a;
+  --input: #262626;
+  --ring: #ff6b2d;
+  --sidebar: #1a1a1a;
+  --sidebar-foreground: #ededed;
+}
+
 * {
   scroll-behavior: smooth;
-  border-color: #e5e7eb;
+  border-color: var(--border);
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Cursor pointer para todos os botões */

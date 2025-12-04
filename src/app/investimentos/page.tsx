@@ -268,7 +268,7 @@ export default function InvestmentPage() {
                   <Label className="text-sm font-semibold">
                     Categorias de Investimento
                   </Label>
-                  <p className="text-xs text-slate-500 mt-1 hidden sm:block">
+                  <p className="text-xs text-[var(--muted-foreground)] mt-1 hidden sm:block">
                     Explore diferentes tipos de ativos para sua carteira
                   </p>
                 </div>
@@ -375,7 +375,7 @@ export default function InvestmentPage() {
                           )}
                         </Avatar>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-sm sm:text-base text-slate-900 truncate">
+                          <h3 className="font-bold text-sm sm:text-base text-[var(--foreground)] truncate">
                             {asset.ticker}
                           </h3>
                           <Badge 
@@ -388,18 +388,18 @@ export default function InvestmentPage() {
                       </div>
 
                     {/* Nome */}
-                    <p className="text-xs sm:text-sm text-slate-600 mb-3 sm:mb-4 line-clamp-2 min-h-[32px] sm:min-h-[40px]">
+                    <p className="text-xs sm:text-sm text-[var(--muted-foreground)] mb-3 sm:mb-4 line-clamp-2 min-h-[32px] sm:min-h-[40px]">
                       {asset.nome}
                     </p>
 
                     {/* Preço e Variação */}
-                    <div className="bg-slate-50 rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
+                    <div className="bg-[var(--secondary)] rounded-lg p-2 sm:p-3 mb-3 sm:mb-4">
                       <div className="flex justify-between items-center gap-2">
                         <div>
-                          <span className="text-[10px] sm:text-xs text-slate-500 block mb-0.5 sm:mb-1">
+                          <span className="text-[10px] sm:text-xs text-[var(--muted-foreground)] block mb-0.5 sm:mb-1">
                             Preço Atual
                           </span>
-                          <span className="text-base sm:text-lg md:text-xl font-bold text-slate-900">
+                          <span className="text-base sm:text-lg md:text-xl font-bold text-[var(--foreground)]">
                             {formatCurrency(asset.preco)}
                           </span>
                         </div>
@@ -422,7 +422,7 @@ export default function InvestmentPage() {
                     {/* Botão Investir */}
                     <Button
                       onClick={() => handleOpenModal(asset)}
-                      className="w-full gap-1.5 sm:gap-2 text-sm sm:text-base"
+                      className="w-full gap-1.5 sm:gap-2 text-sm sm:text-base bg-gradient-to-r from-[#ff6b2d] to-[#b91c1c] text-white hover:from-[#ff7b3d] hover:to-[#c92c2c] shadow-md hover:shadow-lg transition-all"
                       size="default"
                     >
                       <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -445,7 +445,7 @@ export default function InvestmentPage() {
 
         {/* Modal de Investimento - Design Melhorado */}
         <Dialog open={modalOpen} onOpenChange={setModalOpen}>
-          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-white w-[95vw] sm:w-full">
+          <DialogContent className="sm:max-w-[550px] max-h-[90vh] overflow-y-auto bg-[var(--card)] w-[95vw] sm:w-full">
             <DialogHeader className="space-y-2 sm:space-y-3">
               <div className="flex items-center gap-2 sm:gap-3">
                 <Avatar className="h-12 w-12 sm:h-14 sm:w-14 border-2 border-orange-200">
@@ -461,7 +461,7 @@ export default function InvestmentPage() {
                   <DialogTitle className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-[#ff6b2d] to-[#b91c1c] bg-clip-text text-transparent truncate">
                     {selectedAsset?.ticker}
                   </DialogTitle>
-                  <DialogDescription className="text-xs sm:text-sm md:text-base text-slate-600 line-clamp-1">
+                  <DialogDescription className="text-xs sm:text-sm md:text-base text-[var(--muted-foreground)] line-clamp-1">
                     {selectedAsset?.nome}
                   </DialogDescription>
                 </div>
@@ -471,14 +471,14 @@ export default function InvestmentPage() {
             {selectedAsset && (
               <div className="space-y-4 sm:space-y-5 py-3 sm:py-4">
                 {/* Preço Atual - Destaque */}
-                <Card className="bg-gradient-to-br from-orange-50 to-red-50 border-2 border-orange-200 shadow-sm">
+                <Card className="bg-[var(--secondary)] border-2 border-orange-200 shadow-sm">
                   <CardContent className="p-3 sm:p-4 md:p-5">
                     <div className="flex items-center justify-between gap-2">
                       <div>
                         <span className="text-[10px] sm:text-xs font-medium text-orange-600 block mb-1 uppercase tracking-wide">
                           Preço Atual
                         </span>
-                        <span className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
+                        <span className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--foreground)]">
                           {formatCurrency(selectedAsset.preco)}
                         </span>
                       </div>
@@ -501,7 +501,7 @@ export default function InvestmentPage() {
 
                 {/* Quantidade */}
                 <div className="space-y-2 sm:space-y-3">
-                  <Label htmlFor="quantidade" className="text-xs sm:text-sm font-semibold text-slate-700 flex items-center gap-2">
+                  <Label htmlFor="quantidade" className="text-xs sm:text-sm font-semibold text-[var(--foreground)] flex items-center gap-2">
                     Quantidade
                   </Label>
                   <div className="relative">
@@ -511,14 +511,14 @@ export default function InvestmentPage() {
                       min="1"
                       value={quantidade}
                       onChange={(e) => setQuantidade(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="text-lg sm:text-xl font-semibold h-12 sm:h-14 pl-3 sm:pl-4 pr-10 sm:pr-12 border-2 border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100"
+                      className="text-lg sm:text-xl font-semibold h-12 sm:h-14 pl-3 sm:pl-4 pr-10 sm:pr-12 border-2 border-orange-200 focus:border-orange-400 focus:ring-2 focus:ring-orange-100 bg-[var(--background)]"
                       placeholder="1"
                     />
                     <div className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-orange-500 text-xs sm:text-sm font-medium">
                       {quantidade > 1 ? 'cotas' : 'cota'}
                     </div>
                   </div>
-                  <p className="text-[10px] sm:text-xs text-slate-500">
+                  <p className="text-[10px] sm:text-xs text-[var(--muted-foreground)]">
                     Preço unitário: {formatCurrency(selectedAsset.preco)}
                   </p>
                 </div>
@@ -551,7 +551,7 @@ export default function InvestmentPage() {
                 variant="outline"
                 onClick={handleCloseModal}
                 disabled={investing}
-                className="w-full sm:flex-1 h-10 sm:h-12 text-sm sm:text-base border-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400"
+                className="w-full sm:flex-1 h-10 sm:h-12 text-sm sm:text-base border-2 border-[var(--border)] hover:bg-[var(--secondary)] hover:border-[var(--border)]"
               >
                 Cancelar
               </Button>

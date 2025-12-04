@@ -166,17 +166,17 @@ export function PortfolioSummaryComponent({ summary, investments }: PortfolioSum
                 {investments.slice(0, 5).map((inv) => (
                   <div
                     key={inv.id}
-                    className="flex justify-between items-center p-3 rounded-lg hover:bg-slate-50 transition-colors"
+                    className="flex justify-between items-center p-3 rounded-lg hover:bg-[var(--secondary)] transition-colors"
                   >
                     <div>
-                      <p className="font-semibold text-slate-900">{inv.ticker}</p>
-                      <p className="text-sm text-slate-600">{inv.nome}</p>
+                      <p className="font-semibold text-[var(--foreground)]">{inv.ticker}</p>
+                      <p className="text-sm text-[var(--muted-foreground)]">{inv.nome}</p>
                     </div>
                     <div className="text-right">
-                      <p className="font-semibold text-slate-900">
+                      <p className="font-semibold text-[var(--foreground)]">
                         {formatCurrency(inv.valorTotal)}
                       </p>
-                      <p className="text-sm text-slate-600">
+                      <p className="text-sm text-[var(--muted-foreground)]">
                         {inv.quantidade} {inv.quantidade === 1 ? 'unidade' : 'unidades'}
                       </p>
                     </div>
@@ -192,10 +192,10 @@ export function PortfolioSummaryComponent({ summary, investments }: PortfolioSum
             <div className="w-20 h-20 rounded-full bg-orange-50 flex items-center justify-center mb-4 border-2 border-brand-orange">
               <Target className="w-10 h-10 text-brand-orange" />
             </div>
-            <h3 className="text-xl font-bold text-slate-900 mb-2">
+            <h3 className="text-xl font-bold text-[var(--foreground)] mb-2">
               Você ainda não tem investimentos
             </h3>
-            <p className="text-slate-600 text-center max-w-md">
+            <p className="text-[var(--muted-foreground)] text-center max-w-md">
               Comece sua jornada de investimentos explorando nossos ativos disponíveis
             </p>
           </CardContent>

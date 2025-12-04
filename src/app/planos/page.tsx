@@ -133,10 +133,10 @@ export default function PlansPage() {
       <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
-          <h1 className="text-4xl font-bold text-slate-900">
+          <h1 className="text-4xl font-bold text-[var(--foreground)]">
             {isPaidUser ? 'Sua Assinatura 💎' : 'Escolha seu Plano 💎'}
           </h1>
-          <p className="text-xl text-slate-600">
+          <p className="text-xl text-[var(--muted-foreground)]">
             {isPaidUser 
               ? 'Você tem acesso total a todos os recursos premium' 
               : 'Invista no seu futuro financeiro com as ferramentas certas'
@@ -155,7 +155,7 @@ export default function PlansPage() {
               </div>
               
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 mb-2 flex items-center justify-center gap-2">
+                <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2 flex items-center justify-center gap-2">
                   <Sparkles className="w-6 h-6 text-brand-orange" />
                   Você é PRO!
                   <Sparkles className="w-6 h-6 text-brand-orange" />
@@ -202,7 +202,7 @@ export default function PlansPage() {
               <CardTitle className="text-2xl">Gratuito</CardTitle>
               <div className="mt-4">
                 <span className="text-4xl font-bold">R$ 0</span>
-                <span className="text-xl text-slate-600">/mês</span>
+                <span className="text-xl text-[var(--muted-foreground)]">/mês</span>
               </div>
               <CardDescription className="text-base mt-2">
                 Perfeito para começar sua jornada de investimentos
@@ -262,7 +262,7 @@ export default function PlansPage() {
               </div>
               <div className="mt-4">
                 <span className="text-4xl font-bold">R$ 29,90</span>
-                <span className="text-xl text-slate-600">/mês</span>
+                <span className="text-xl text-[var(--muted-foreground)]">/mês</span>
               </div>
               <CardDescription className="text-base mt-2">
                 Para investidores que querem ir além e ter suporte especializado
@@ -310,21 +310,21 @@ export default function PlansPage() {
             <div className="grid md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <h3 className="text-lg font-bold">🎯 Suporte Especializado</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Tenha acesso direto a gestores financeiros experientes para tirar dúvidas
                   e receber orientações personalizadas.
                 </p>
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-bold">📊 Investimentos Ilimitados</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Construa um portfólio diversificado sem limitações, explorando todas as
                   oportunidades do mercado.
                 </p>
               </div>
               <div className="space-y-2">
                 <h3 className="text-lg font-bold">📅 Agendamento Flexível</h3>
-                <p className="text-sm text-slate-600 leading-relaxed">
+                <p className="text-sm text-[var(--muted-foreground)] leading-relaxed">
                   Agende reuniões com gestoras nos horários que funcionam para você e
                   receba consultoria personalizada.
                 </p>

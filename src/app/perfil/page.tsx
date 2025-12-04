@@ -287,7 +287,7 @@ export default function PerfilPage() {
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="text-lg font-semibold text-slate-900 mb-4">
+                <h3 className="text-lg font-semibold text-[var(--foreground)] mb-4">
                   {questions[currentQuestion].question}
                 </h3>
                 <div className="space-y-3">
@@ -312,10 +312,10 @@ export default function PerfilPage() {
           <Card>
             <CardContent className="p-12 text-center">
               <Loading size="lg" />
-              <p className="mt-4 text-lg font-semibold text-slate-900">
+              <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
                 Salvando seu perfil...
               </p>
-              <p className="text-sm text-slate-600 mt-2">
+              <p className="text-sm text-[var(--muted-foreground)] mt-2">
                 Aguarde enquanto processamos suas respostas
               </p>
             </CardContent>
@@ -335,7 +335,7 @@ export default function PerfilPage() {
                 )}>
                   <ProfileIcon className={cn(
                     "w-8 h-8",
-                    result === 'conservador' ? 'text-blue-600' :
+                    result === 'conservador' ? 'text-green-600' :
                     result === 'moderado' ? 'text-brand-orange' :
                     'text-brand-red'
                   )} />
@@ -353,14 +353,14 @@ export default function PerfilPage() {
             <CardContent className="space-y-6">
               {/* Recomendações */}
               <div>
-                <h4 className="font-semibold text-slate-900 mb-3">
+                <h4 className="font-semibold text-[var(--foreground)] mb-3">
                   Investimentos Recomendados:
                 </h4>
                 <div className="grid gap-2">
                   {profileInfo[result].recommendations.map((rec, index) => (
                     <div
                       key={index}
-                      className="flex items-center gap-2 p-3 bg-slate-50 rounded-lg"
+                      className="flex items-center gap-2 p-3 bg-[var(--secondary)] rounded-lg"
                     >
                       <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
                       <span className="text-slate-700">{rec}</span>
@@ -401,32 +401,32 @@ export default function PerfilPage() {
 
         {/* Info sobre perfis */}
         {!result && (
-          <Card className="bg-slate-50 border-slate-200">
+          <Card className="bg-[var(--secondary)] border-slate-200">
             <CardContent className="p-6">
-              <h4 className="font-semibold text-slate-900 mb-3">
+              <h4 className="font-semibold text-[var(--foreground)] mb-3">
                 💡 Sobre os Perfis de Investidor
               </h4>
               <div className="grid md:grid-cols-3 gap-4 text-sm">
                 <div>
                   <div className="flex items-center gap-2 mb-1">
-                    <Shield className="w-4 h-4 text-blue-600" />
-                    <strong className="text-blue-600">Conservador</strong>
+                    <Shield className="w-4 h-4 text-green-600" />
+                    <strong className="text-green-600">Conservador</strong>
                   </div>
-                  <p className="text-slate-600">Prioriza segurança e baixo risco</p>
+                  <p className="text-[var(--muted-foreground)]">Prioriza segurança e baixo risco</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <TrendingUp className="w-4 h-4 text-brand-orange" />
                     <strong className="text-brand-orange">Moderado</strong>
                   </div>
-                  <p className="text-slate-600">Equilíbrio entre risco e retorno</p>
+                  <p className="text-[var(--muted-foreground)]">Equilíbrio entre risco e retorno</p>
                 </div>
                 <div>
                   <div className="flex items-center gap-2 mb-1">
                     <Zap className="w-4 h-4 text-brand-red" />
                     <strong className="text-brand-red">Arrojado</strong>
                   </div>
-                  <p className="text-slate-600">Busca altos retornos com mais risco</p>
+                  <p className="text-[var(--muted-foreground)]">Busca altos retornos com mais risco</p>
                 </div>
               </div>
             </CardContent>

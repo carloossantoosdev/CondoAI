@@ -53,12 +53,12 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
   const history = buildDividendHistory();
 
   return (
-    <div className="mt-12 pt-8 border-t-2 border-slate-200">
+    <div className="mt-12 pt-8 border-t-2 border-[var(--border)]">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold text-slate-900 mb-2">
+        <h2 className="text-2xl font-bold text-[var(--foreground)] mb-2">
           Histórico de Dividendos
         </h2>
-        <p className="text-slate-600">
+        <p className="text-[var(--muted-foreground)]">
           Acompanhe os proventos dos últimos 12 meses das ações que você possui
         </p>
       </div>
@@ -91,13 +91,13 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
       ) : (
         <>
           {/* Informação sobre seus ativos */}
-          <Alert className="bg-blue-50 border-blue-200 mb-6">
-            <AlertDescription className="text-blue-900">
+          <Alert className="bg-[var(--secondary)] border-[var(--border)] mb-6">
+            <AlertDescription className="text-[var(--foreground)]">
               <div className="space-y-2">
                 <p className="font-semibold">Seus Ativos que Pagam Dividendos</p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 mt-3">
                   {assets.map((asset, index) => (
-                    <div key={index} className="bg-white/60 p-3 rounded-lg border border-blue-100 space-y-2">
+                    <div key={index} className="bg-[var(--card)] p-3 rounded-lg border border-[var(--border)] space-y-2">
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
                           <Badge variant="outline" className="font-bold">{asset.ticker}</Badge>
@@ -107,12 +107,12 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
                           <p className="text-sm font-bold text-green-600">
                             {formatCurrency(asset.totalRecebido)}
                           </p>
-                          <p className="text-xs text-slate-600">
+                          <p className="text-xs text-[var(--muted-foreground)]">
                             DY: {asset.dividendYield.toFixed(2)}%
                           </p>
                         </div>
                       </div>
-                      <div className="text-xs text-slate-600 border-t border-blue-100 pt-2">
+                      <div className="text-xs text-[var(--muted-foreground)] border-t border-[var(--border)] pt-2">
                         📅 Comprado em: <strong>{formatDate(asset.dataCompra)}</strong>
                       </div>
                       {asset.totalRecebido === 0 && (
@@ -123,7 +123,7 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-blue-700 mt-3 italic">
+                <p className="text-xs text-[var(--muted-foreground)] mt-3 italic">
                   Mostramos todos os dividendos dos <strong>últimos 12 meses</strong>. 
                   Você só recebe dividendos pagos <strong>após</strong> a data que você comprou cada ação.
                 </p>
@@ -137,7 +137,7 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
               <div className="flex items-center gap-2">
                 <CardTitle>Histórico de Proventos (Últimos 12 Meses)</CardTitle>
               </div>
-              <div className="text-sm text-slate-600 mt-2">
+              <div className="text-sm text-[var(--muted-foreground)] mt-2">
                 Todos os dividendos pagos pelas suas ações nos últimos 12 meses. 
                 Os marcados com <Badge variant="success" className="text-xs mx-1">✓ Recebido</Badge> você realmente recebeu. 
                 Os marcados com <Badge variant="secondary" className="text-xs mx-1">Não recebeu</Badge> foram pagos antes de você comprar a ação.
@@ -179,7 +179,7 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
                             key={index} 
                             className={cn(
                               "transition-colors",
-                              recebeu ? "hover:bg-green-50" : "hover:bg-slate-50 opacity-60"
+                              recebeu ? "hover:bg-green-950/20" : "hover:bg-[var(--secondary)] opacity-60"
                             )}
                           >
                             <TableCell className="font-medium">
@@ -192,10 +192,10 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
                             </TableCell>
                             <TableCell className="text-right">
                               <div>
-                                <span className="text-blue-600 font-semibold">
+                                <span className="text-brand-orange font-semibold">
                                   {formatCurrency(item.valorPorCota)}
                                 </span>
-                                <span className="text-xs text-slate-500 block">por cota</span>
+                                <span className="text-xs text-[var(--muted-foreground)] block">por cota</span>
                               </div>
                             </TableCell>
                             <TableCell className="text-right font-semibold">
@@ -203,7 +203,7 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
                             </TableCell>
                             <TableCell className="text-right">
                               <div className="space-y-1">
-                                <span className="text-xs text-slate-500 block">
+                                <span className="text-xs text-[var(--muted-foreground)] block">
                                   {formatCurrency(item.valorPorCota)} × {item.quantidade}
                                 </span>
                                 {recebeu ? (
@@ -215,7 +215,7 @@ export function DividendsSection({ assets, loading, error }: DividendsSectionPro
                                   </div>
                                 ) : (
                                   <div className="flex items-center justify-end gap-1">
-                                    <span className="font-bold text-slate-400 text-lg line-through">
+                                    <span className="font-bold text-[var(--muted-foreground)] text-lg line-through">
                                       {formatCurrency(item.totalRecebido)}
                                     </span>
                                     <Badge variant="secondary" className="text-xs ml-1">Não recebeu</Badge>
