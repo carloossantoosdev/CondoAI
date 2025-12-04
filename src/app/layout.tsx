@@ -11,22 +11,23 @@ export const metadata: Metadata = {
   title: 'Finanças Pro - Sua plataforma para simular investimentos',
   description: 'Plataforma completa para simular investimentos e ganhar dinheiro com investimentos',
   manifest: '/manifest.json',
-  themeColor: '#ff6b2d',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'default',
     title: 'Finanças Pro',
   },
-  viewport: {
-    width: 'device-width',
-    initialScale: 1,
-    maximumScale: 1,
-    userScalable: false,
-  },
   icons: {
     icon: '/icon-192x192.png',
     apple: '/icon-192x192.png',
   },
+};
+
+export const viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  themeColor: '#ff6b2d',
 };
 
 export default function RootLayout({
