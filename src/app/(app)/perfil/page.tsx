@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import MainLayout from '@/components/layout/MainLayout';
 import { createClient } from '@/lib/supabase/client';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -114,19 +113,13 @@ const profileInfo = {
 };
 
 export default function PerfilPage() {
-  const { user, loading, refreshUser } = useAuth();
+  const { user, refreshUser } = useAuth();
   const router = useRouter();
   const [currentQuestion, setCurrentQuestion] = useState(0);
   const [answers, setAnswers] = useState<number[]>([]);
   const [result, setResult] = useState<'conservador' | 'moderado' | 'arrojado' | null>(null);
   const [saving, setSaving] = useState(false);
   const [hasProfile, setHasProfile] = useState(false);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   useEffect(() => {
     if (user?.riskProfile) {
@@ -236,25 +229,16 @@ export default function PerfilPage() {
     setSaving(false);
   };
 
-  if (loading) {
-    return <Loading size="lg" fullscreen />;
-  }
-
-  if (!user) {
-    return null;
-  }
-
   const ProfileIcon = result ? profileInfo[result].icon : User;
 
   return (
-    <MainLayout>
-      <div className="space-y-6 max-w-4xl">
-        {/* Header */}
-        <PageHeader 
-          title="Perfil do Investidor"
-          description="Descubra seu perfil de risco e receba recomendações personalizadas"
-          icon="📊"
-        />
+    <div className="space-y-6 max-w-4xl">
+      {/* Header */}
+      <PageHeader 
+        title="Perfil do Investidor"
+        description="Descubra seu perfil de risco e receba recomendações personalizadas"
+        icon="📊"
+      />
 
         {/* Perfil Atual */}
         {hasProfile && result && (
@@ -432,8 +416,7 @@ export default function PerfilPage() {
             </CardContent>
           </Card>
         )}
-      </div>
-    </MainLayout>
+    </div>
   );
 }
 

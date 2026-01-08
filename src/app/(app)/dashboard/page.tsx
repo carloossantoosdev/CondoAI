@@ -1,13 +1,10 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import MainLayout from '@/components/layout/MainLayout';
 import { createClient } from '@/lib/supabase/client';
 import { Investment, PortfolioSummary } from '@/types';
 import { AssetWithDividends, DividendData } from '@/types/dividends';
-import { Loading } from '@/components/ui/loading';
 import { PageHeader } from '@/components/ui/page-header';
 import { PortfolioSummaryComponent } from '@/components/dashboard/PortfolioSummary';
 import { DividendsSection } from '@/components/dashboard/DividendsSection';
@@ -16,8 +13,7 @@ import { DashboardCardGridSkeleton, DashboardChartSkeleton } from '@/components/
 const supabaseClient = createClient();
 
 export default function DashboardPage() {
-  const { user, loading } = useAuth();
-  const router = useRouter();
+  const { user } = useAuth();
   
   const [investments, setInvestments] = useState<Investment[]>([]);
   const [summary, setSummary] = useState<PortfolioSummary>({
@@ -34,11 +30,6 @@ export default function DashboardPage() {
   const [errorDividends, setErrorDividends] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-      return;
-    }
-
     if (!user?.uid) {
       setLoadingData(false);
       setLoadingDividends(false);
@@ -47,7 +38,7 @@ export default function DashboardPage() {
 
     loadInvestments();
     loadDividends();
-  }, [user?.uid, loading, router]);
+  }, [user?.uid]);
 
   const loadInvestments = async () => {
     if (!user?.uid) return;
@@ -214,42 +205,36 @@ export default function DashboardPage() {
     }
   };
 
-  if (loading || !user) {
-    return <Loading size="lg" fullscreen />;
-  }
-
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <PageHeader 
-          title={`Bem-vindo, ${user.displayName}!`}
-          description="Aqui está um resumo dos seus investimentos"
-          icon="👋"
-        />
+    <div className="space-y-6">
+      {/* Header */}
+      <PageHeader 
+        title={`Bem-vindo, ${user?.displayName}!`}
+        description="Aqui está um resumo dos seus investimentos"
+        icon="👋"
+      />
 
-        {loadingData ? (
-          <>
-            <DashboardCardGridSkeleton />
-            <DashboardChartSkeleton />
-          </>
-        ) : (
-          <>
-            {/* Componente de Resumo da Carteira */}
-            <PortfolioSummaryComponent 
-              summary={summary} 
-              investments={investments} 
-            />
+      {loadingData ? (
+        <>
+          <DashboardCardGridSkeleton />
+          <DashboardChartSkeleton />
+        </>
+      ) : (
+        <>
+          {/* Componente de Resumo da Carteira */}
+          <PortfolioSummaryComponent 
+            summary={summary} 
+            investments={investments} 
+          />
 
-            {/* Componente de Dividendos */}
-            <DividendsSection
-              assets={assets}
-              loading={loadingDividends}
-              error={errorDividends}
-            />
-          </>
-        )}
-      </div>
-    </MainLayout>
+          {/* Componente de Dividendos */}
+          <DividendsSection
+            assets={assets}
+            loading={loadingDividends}
+            error={errorDividends}
+          />
+        </>
+      )}
+    </div>
   );
 }

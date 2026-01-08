@@ -3,25 +3,23 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import MainLayout from '@/components/layout/MainLayout';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Check, X, Sparkles, Loader2, CheckCircle2 } from 'lucide-react';
-import { Loading } from '@/components/ui/loading';
 import { cn } from '@/lib/utils';
 
 export default function PlansPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [checkoutLoading, setCheckoutLoading] = useState(false);
   const [downgradeLoading, setDowngradeLoading] = useState(false);
 
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
+  // O layout do grupo `(app)` já garante autenticação, mas mantemos o guard
+  // para satisfazer o TypeScript e evitar edge cases de renderização.
+  if (!user) {
+    return null;
+  }
 
   const handleSubscribe = async () => {
     if (!user) return;
@@ -122,15 +120,10 @@ export default function PlansPage() {
     { text: 'Relatórios personalizados', included: true },
   ];
 
-  if (loading || !user) {
-    return <Loading size="lg" fullscreen />;
-  }
-
   const isPaidUser = user.subscriptionStatus === 'paid';
 
   return (
-    <MainLayout>
-      <div className="space-y-8">
+    <div className="space-y-8">
         {/* Header */}
         <div className="text-center space-y-4">
           <h1 className="text-4xl font-bold text-[var(--foreground)]">
@@ -332,7 +325,6 @@ export default function PlansPage() {
             </div>
           </CardContent>
         </Card>
-      </div>
-    </MainLayout>
+    </div>
   );
 }

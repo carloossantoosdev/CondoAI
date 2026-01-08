@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import MainLayout from '@/components/layout/MainLayout';
 import { Asset, InvestmentType, RiskProfile } from '@/types';
 import { getAllAssets, getAssetsByType, PaginatedAssets } from '@/services/api/investmentService';
 import { createClient } from '@/lib/supabase/client';
@@ -30,7 +29,6 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Loading } from '@/components/ui/loading';
 import { SmartPagination } from '@/components/ui/pagination';
 import { PageHeader } from '@/components/ui/page-header';
 import { AssetGridSkeleton } from '@/components/ui/asset-card-skeleton';
@@ -41,7 +39,7 @@ import { cn } from '@/lib/utils';
 const supabaseClient = createClient();
 
 export default function InvestmentPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [currentTab, setCurrentTab] = useState<InvestmentType>('rendaFixa');
   const [assets, setAssets] = useState<Asset[]>([]);
@@ -54,12 +52,6 @@ export default function InvestmentPage() {
   const [serverTotalPages, setServerTotalPages] = useState(1);
   const [totalCount, setTotalCount] = useState(0);
   const itemsPerPage = 10;
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   useEffect(() => {
     setPage(1); // Resetar para página 1 ao mudar de tab
@@ -147,10 +139,6 @@ export default function InvestmentPage() {
     }).format(value);
   };
 
-  if (loading || !user) {
-    return <Loading size="lg" fullscreen />;
-  }
-
   // Paginação
   const useServerPagination = currentTab === 'acao';
   
@@ -191,14 +179,13 @@ export default function InvestmentPage() {
   };
 
   return (
-    <MainLayout>
-      <div className="space-y-4 sm:space-y-6">
-        {/* Header */}
-        <PageHeader 
-          title="Explorar Investimentos"
-          description="Descubra as melhores oportunidades de investimento para seu perfil"
-          icon="📊"
-        />
+    <div className="space-y-4 sm:space-y-6">
+      {/* Header */}
+      <PageHeader 
+        title="Explorar Investimentos"
+        description="Descubra as melhores oportunidades de investimento para seu perfil"
+        icon="📊"
+      />
 
         {/* Banner de Incentivo - Perfil Não Definido */}
         {!user?.riskProfile && (
@@ -575,7 +562,6 @@ export default function InvestmentPage() {
             </DialogFooter>
           </DialogContent>
         </Dialog>
-      </div>
-    </MainLayout>
+    </div>
   );
 }

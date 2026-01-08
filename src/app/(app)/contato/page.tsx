@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import MainLayout from '@/components/layout/MainLayout';
 import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import { createClient } from '@/lib/supabase/client';
@@ -36,7 +35,7 @@ const AVAILABLE_TIMES = [
 ];
 
 export default function ContactPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
   const [selectedDate, setSelectedDate] = useState<Value>(new Date());
   const [selectedTime, setSelectedTime] = useState<string>('');
@@ -46,12 +45,6 @@ export default function ContactPage() {
   const [appointments, setAppointments] = useState<Appointment[]>([]);
   const [loadingAppointments, setLoadingAppointments] = useState(true);
   const hasLoadedRef = useRef(false);
-
-  useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
 
   // Verificar se o usuário é PRO
   const isPaidUser = user?.subscriptionStatus === 'paid';
@@ -150,20 +143,15 @@ export default function ContactPage() {
     }
   };
 
-  if (loading || !user) {
-    return <Loading size="lg" fullscreen />;
-  }
-
   // Se não for usuário PRO, mostrar mensagem
   if (!isPaidUser) {
     return (
-      <MainLayout>
-        <div className="space-y-6">
-          <PageHeader 
-            title="Contato com Gestora"
-            description="Agende uma reunião com nossa equipe de especialistas"
-            icon="📞"
-          />
+      <div className="space-y-6">
+        <PageHeader 
+          title="Contato com Gestora"
+          description="Agende uma reunião com nossa equipe de especialistas"
+          icon="📞"
+        />
 
           <Card className="max-w-2xl mx-auto border-2 border-orange-200">
             <CardContent className="p-12 text-center space-y-6">
@@ -197,20 +185,18 @@ export default function ContactPage() {
               </Button>
             </CardContent>
           </Card>
-        </div>
-      </MainLayout>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="space-y-6">
-        {/* Header */}
-        <PageHeader 
-          title="Contato com Gestora"
-          description="Agende uma reunião e receba orientação especializada para seus investimentos"
-          icon="📞"
-        />
+    <div className="space-y-6">
+      {/* Header */}
+      <PageHeader 
+        title="Contato com Gestora"
+        description="Agende uma reunião e receba orientação especializada para seus investimentos"
+        icon="📞"
+      />
 
         <div className="grid lg:grid-cols-3 gap-6">
           {/* Formulário de Agendamento */}
@@ -372,7 +358,6 @@ export default function ContactPage() {
             </Card>
           </div>
         </div>
-      </div>
-    </MainLayout>
+    </div>
   );
 }

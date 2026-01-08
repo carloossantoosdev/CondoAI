@@ -3,7 +3,6 @@
 import { useEffect, useState, useRef, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import MainLayout from '@/components/layout/MainLayout';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { CheckCircle2, Sparkles } from 'lucide-react';
@@ -73,35 +72,32 @@ function SuccessContent() {
 
   if (verifying) {
     return (
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Card className="max-w-md w-full">
-            <CardContent className="p-12 text-center">
-              <Loading size="lg" />
-              <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
-                {error ? error : 'Verificando pagamento...'}
-              </p>
-              <p className="text-sm text-[var(--muted-foreground)] mt-2">
-                {error ? 'Redirecionando...' : 'Aguarde enquanto confirmamos sua assinatura'}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-12 text-center">
+            <Loading size="lg" />
+            <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
+              {error ? error : 'Verificando pagamento...'}
+            </p>
+            <p className="text-sm text-[var(--muted-foreground)] mt-2">
+              {error ? 'Redirecionando...' : 'Aguarde enquanto confirmamos sua assinatura'}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     );
   }
 
   return (
-    <MainLayout>
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Card className="max-w-2xl w-full border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
-          <CardContent className="p-12 text-center space-y-6">
-            {/* Ícone de Sucesso */}
-            <div className="flex justify-center">
-              <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
-                <CheckCircle2 className="w-12 h-12 text-green-600" />
-              </div>
+    <div className="flex items-center justify-center min-h-[60vh]">
+      <Card className="max-w-2xl w-full border-2 border-green-200 bg-gradient-to-br from-green-50 to-emerald-50">
+        <CardContent className="p-12 text-center space-y-6">
+          {/* Ícone de Sucesso */}
+          <div className="flex justify-center">
+            <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle2 className="w-12 h-12 text-green-600" />
             </div>
+          </div>
 
             {/* Título */}
             <div>
@@ -154,10 +150,9 @@ function SuccessContent() {
             >
               Ir para Dashboard
             </Button>
-          </CardContent>
-        </Card>
-      </div>
-    </MainLayout>
+        </CardContent>
+      </Card>
+    </div>
   );
 }
 
@@ -165,18 +160,16 @@ function SuccessContent() {
 export default function SuccessPage() {
   return (
     <Suspense fallback={
-      <MainLayout>
-        <div className="flex items-center justify-center min-h-[60vh]">
-          <Card className="max-w-md w-full">
-            <CardContent className="p-12 text-center">
-              <Loading size="lg" />
-              <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
-                Carregando...
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </MainLayout>
+      <div className="flex items-center justify-center min-h-[60vh]">
+        <Card className="max-w-md w-full">
+          <CardContent className="p-12 text-center">
+            <Loading size="lg" />
+            <p className="mt-4 text-lg font-semibold text-[var(--foreground)]">
+              Carregando...
+            </p>
+          </CardContent>
+        </Card>
+      </div>
     }>
       <SuccessContent />
     </Suspense>
